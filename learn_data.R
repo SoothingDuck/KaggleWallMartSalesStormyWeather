@@ -62,19 +62,3 @@ write.csv(train.df, file.path("DATA", "alternate_train.csv"), row.names = FALSE)
 test.df <- merge(test.df, key.df)
 test.df <- merge(test.df, weather.df)
 write.csv(test.df, file.path("DATA", "alternate_test.csv"), row.names = FALSE)
-
-train.df$type <- "train"
-test.df$type <- "test"
-
-test.df$units <- NA
-
-all.df <- rbind(train.df, test.df)
-
-library(ggplot2)
-agg <- ddply(all.df,
-             .(store_nbr,date, type),
-             summarise,
-             tavg=max(tavg)
-             )
-
-ggplot(agg) + geom_point(aes(x=date, y=tavg, colour=type)) + facet_wrap(~ store_nbr)
