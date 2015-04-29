@@ -21,7 +21,6 @@ and
 t1.station_nbr = 13
                          ")
 
-ggplot(weather.df) + geom_point(aes(x=date, y=preciptotal))
 
 df <- dbGetQuery(con,"
 select
@@ -43,5 +42,42 @@ having total_item < 3000
                  ")
 
 ggplot(df) + geom_point(aes(x=date, y=total_item)) + facet_wrap(~ store_nbr)
+
+df <- dbGetQuery(con,"
+select
+s.dataset,
+count(*)
+from
+sales s
+group by 1
+                 ")
+
+
+
+for(item_number in 1:111) {
+  df <- dbGetQuery(con,paste("
+                          select
+                             s.date,
+                             s.year,
+                             s.month,
+                             s.store_nbr,
+                             s.dataset,
+                             coalesce(s.units, 0) as units
+                             from
+                             sales s,
+                             key k,
+                             weather w
+                             where
+                             s.store_nbr = k.store_nbr and
+                             k.station_nbr = w.station_nbr and
+                             s.date = w.date and
+                             s.item_nbr = ", item_number," and
+                             coalesce(s.units, 0) < 2000
+                             ", sep = ""))
+
+  g <- ggplot(df) + geom_point(aes(x=date, y=units, colour=dataset)) + facet_wrap( ~ store_nbr) + theme_bw()
+  ggsave(filename = file.path("pdf", paste("store_item_", item_number, ".pdf", sep = "")), plot = g, scale = 1.5)
+
+}
 
 dbDisconnect(con)

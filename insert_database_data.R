@@ -19,30 +19,32 @@ weather.df$date <- ymd(weather.df$date)
 weather.df$sunrise <- ifelse(weather.df$sunrise == "-", NA, weather.df$sunrise)
 weather.df$sunset <- ifelse(weather.df$sunset == "-", NA, weather.df$sunset)
 
-# Code Sum
-f <- function(x) {
-  return(data.frame(x=strsplit(as.character(x$codesum), " ")[[1]]))
-}
+# # Code Sum
+# f <- function(x) {
+#   return(data.frame(x=strsplit(as.character(x$codesum), " ")[[1]]))
+# }
+# 
+# agg <- ddply(weather.df,
+#              .(station_nbr, date),
+#              f
+# )
+# 
+# m <- melt(agg, id.vars = c("station_nbr", "date"))
+# m$value <- ifelse(m$value == "", "NOTHING", m$value)
+# m$value <- paste("Weather.Code", m$value, sep = ".")
+# m$bin <- 1
+# 
+# d <- dcast(m, station_nbr + date ~ value, value.var = "bin", fill = 0)
+# 
+# # Merge
+# w <- merge(weather.df, d)
+# w <- w[, -which(names(w) == "codesum")]
 
-agg <- ddply(weather.df,
-             .(station_nbr, date),
-             f
-)
-
-m <- melt(agg, id.vars = c("station_nbr", "date"))
-m$value <- ifelse(m$value == "", "NOTHING", m$value)
-m$value <- paste("Weather.Code", m$value, sep = ".")
-m$bin <- 1
-
-d <- dcast(m, station_nbr + date ~ value, value.var = "bin", fill = 0)
-
-# Merge
-w <- merge(weather.df, d)
-w <- w[, -which(names(w) == "codesum")]
-w$snowfall <- ifelse(w$snowfall == "T", 0.0, w$snowfall)
-w$preciptotal <- ifelse(w$preciptotal == "T", 0.0, w$preciptotal)
-
-weather.df <- w
+weather.df$snowfall <- ifelse(weather.df$snowfall == "T", 0.0, weather.df$snowfall)
+weather.df$preciptotal <- ifelse(weather.df$preciptotal == "T", 0.0, weather.df$preciptotal)
+weather.df$year <- year(weather.df$date)
+weather.df$month <- month(weather.df$date)
+weather.df$week <- week(weather.df$date)
 
 dbWriteTable(con, "weather", weather.df)
 
@@ -54,7 +56,14 @@ train.df$dataset <- "train"
 test.df$dataset <- "test"
 
 train.df$date <- ymd(train.df$date)
+train.df$year <- year(train.df$date)
+train.df$month <- month(train.df$date)
+train.df$week <- week(train.df$date)
+
 test.df$date <- ymd(test.df$date)
+test.df$year <- year(test.df$date)
+test.df$month <- month(test.df$date)
+test.df$week <- week(test.df$date)
 
 train.df$store_nbr <- factor(train.df$store_nbr)
 train.df$item_nbr <- factor(train.df$item_nbr)
@@ -65,6 +74,9 @@ test.df$item_nbr <- factor(test.df$item_nbr)
 test.df$units <- NA
 
 all.df <- rbind(train.df, test.df)
+all.df$year <- year(all.df$date)
+all.df$month <- month(all.df$date)
+all.df$week <- week(all.df$date)
 
 dbWriteTable(con, "sales", all.df)
 
