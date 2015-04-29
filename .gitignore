@@ -28,3 +28,4 @@ submission/*.csv
 
 # sqlite
 db.sqlite3
+bin
