@@ -22,15 +22,15 @@ test.df$date <- ymd(test.df$date)
 
 m <- data.frame(model.matrix(~ item_nbr - 1, test.df))
 test.df <- cbind(test.df, m)
-test.df <- test.df[, -which(names(test.df) == "item_nbr")]
+#test.df <- test.df[, -which(names(test.df) == "item_nbr")]
 
 m <- data.frame(model.matrix(~ store_nbr - 1, test.df))
 test.df <- cbind(test.df, m)
-test.df <- test.df[, -which(names(test.df) == "store_nbr")]
+#test.df <- test.df[, -which(names(test.df) == "store_nbr")]
 
 m <- data.frame(model.matrix(~ station_nbr - 1, test.df))
 test.df <- cbind(test.df, m)
-test.df <- test.df[, -which(names(test.df) == "station_nbr")]
+#test.df <- test.df[, -which(names(test.df) == "station_nbr")]
 
 
 # subset
@@ -42,25 +42,26 @@ train.df <- train.df[indices,]
 
 m <- data.frame(model.matrix(~ item_nbr - 1, train.df))
 train.df <- cbind(train.df, m)
-train.df <- train.df[, -which(names(train.df) == "item_nbr")]
+#train.df <- train.df[, -which(names(train.df) == "item_nbr")]
 
 m <- data.frame(model.matrix(~ store_nbr - 1, train.df))
 train.df <- cbind(train.df, m)
-train.df <- train.df[, -which(names(train.df) == "store_nbr")]
+#train.df <- train.df[, -which(names(train.df) == "store_nbr")]
 train.df <- train.df[, -which(names(train.df) == "store_nbr35")]
 
 m <- data.frame(model.matrix(~ station_nbr - 1, train.df))
 train.df <- cbind(train.df, m)
-train.df <- train.df[, -which(names(train.df) == "station_nbr")]
+#train.df <- train.df[, -which(names(train.df) == "station_nbr")]
+train.df <- train.df[, -which(names(train.df) == "station_nbr5")]
 
 # GBM
 gbm.model <- gbm(
   units ~ 
-    . - date,
+    . - date - item_nbr - store_nbr - station_nbr,
   distribution = "gaussian",
   data = train.df,
   n.trees = 1000,
-  interaction.depth = 10,
+  interaction.depth = 5,
   shrinkag = 0.01,
   train.fraction = 0.9,
   verbose = TRUE
@@ -68,3 +69,11 @@ gbm.model <- gbm(
 
 prediction.train <- predict(gbm.model, newdata=train.df)
 prediction.test <- predict(gbm.model, newdata=test.df)
+
+test.df$prediction <- prediction.test
+
+sample.submission <- read.csv(file.path("DATA", "sampleSubmission.csv"), stringsAsFactor = FALSE)
+
+submission <- data.frame(
+
+  )
