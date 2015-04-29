@@ -13,8 +13,6 @@ weather.df$date <- ymd(weather.df$date)
 weather.df$sunrise <- ifelse(weather.df$sunrise == "-", NA, weather.df$sunrise)
 weather.df$sunset <- ifelse(weather.df$sunset == "-", NA, weather.df$sunset)
 
-tokenize(as.character(weather.df$codesum))
-
 # Code Sum
 f <- function(x) {
   return(data.frame(x=strsplit(as.character(x$codesum), " ")[[1]]))
