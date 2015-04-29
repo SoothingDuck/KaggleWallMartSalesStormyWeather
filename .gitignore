@@ -9,10 +9,22 @@
 .Rproj.user/
 *.Rproj
 
+# R files
+.RData
+
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
 
 # DATA files
-DATA
+DATA/*.csv
+DATA/*.pdf
 .Rproj.user
+submission/*.csv
+
+# vim trash files
+*~
+*.swp
+
+# sqlite
+db.sqlite3

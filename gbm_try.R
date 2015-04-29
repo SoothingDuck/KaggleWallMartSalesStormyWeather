@@ -64,6 +64,7 @@ gbm.model <- gbm(
   interaction.depth = 5,
   shrinkag = 0.01,
   train.fraction = 0.9,
+  n.minobsinnode = 50,
   verbose = TRUE
   )
 
@@ -75,5 +76,13 @@ test.df$prediction <- prediction.test
 sample.submission <- read.csv(file.path("DATA", "sampleSubmission.csv"), stringsAsFactor = FALSE)
 
 submission <- data.frame(
-
+    id = with(test.df, paste(as.character(store_nbr), as.character(item_nbr), as.character(date), sep = "_")),
+    units=test.df$prediction
   )
+
+submission$id <- as.character(submission$id)
+submission <- submission[order(submission$id),]
+
+submission <- submission[match(sample.submission$id, submission$id),]
+
+write.csv(x=submission, file=file.path("submission", "gbm_try_submission.csv"), row.names = FALSE, quote = FALSE)
