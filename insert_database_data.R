@@ -69,7 +69,10 @@ all.df <- rbind(train.df, test.df)
 dbWriteTable(con, "sales", all.df)
 
 # Creation des indexes
-dbGetQuery(con,"create index weather_station_nbr_idx on weather (station_nbr);")
+dbGetQuery(con,"create unique index weather_station_nbr_idx on weather (station_nbr, date)")
+dbGetQuery(con,"create unique index sales_store_nbr_idx on sales (store_nbr, item_nbr, date)")
+dbGetQuery(con,"create index key_station_nbr_idx on key (station_nbr)")
+dbGetQuery(con,"create unique index key_store_nbr_idx on key (store_nbr)")
 
 
 dbDisconnect(con)
