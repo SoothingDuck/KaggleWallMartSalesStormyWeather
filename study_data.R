@@ -52,6 +52,46 @@ sales s
 group by 1
                  ")
 
+sales.df <- dbGetQuery(con,"
+  select * from sales
+")
+
+df <- dbGetQuery(con,"
+  select 
+  store_nbr,
+  item_nbr,
+  year,
+  week,
+  sum(units) as total_units_week,
+  avg(units) as avg_units_week
+  from
+  sales
+  group by 1,2,3,4
+  having avg(units) > 0 and avg(units) < 500
+")
+
+dbWriteTable(con, "store_item_week_avg", df)
+
+
+ggplot(subset(df, year == 2013)) + geom_point(aes(x=week,y=avg_units_week, colour=item_nbr)) + facet_wrap(~ store_nbr)
+
+
+df <- dbGetQuery(con,"
+  select 
+  store_nbr,
+  item_nbr,
+  year,
+  month,
+  sum(units) as total_units_month,
+  avg(units) as avg_units_month
+  from
+  sales
+  group by 1,2,3,4
+  having avg(units) > 0 and avg(units) < 500
+")
+
+dbWriteTable(con, "store_item_month_avg", df)
+
 
 
 for(item_number in 1:111) {
@@ -62,7 +102,7 @@ for(item_number in 1:111) {
                              s.month,
                              s.store_nbr,
                              s.dataset,
-                             coalesce(s.units, 0) as units
+                             coalesce(s.units, -1) as units
                              from
                              sales s,
                              key k,
@@ -72,10 +112,19 @@ for(item_number in 1:111) {
                              k.station_nbr = w.station_nbr and
                              s.date = w.date and
                              s.item_nbr = ", item_number," and
-                             coalesce(s.units, 0) < 2000
+                             coalesce(s.units, -1) < 2000
                              ", sep = ""))
 
-  g <- ggplot(df) + geom_point(aes(x=date, y=units, colour=dataset)) + facet_wrap( ~ store_nbr) + theme_bw()
+  sec.2013 <- 1325376000 + (365*24*3600)
+  sec.2014 <- 1325376000 + (365*24*3600)*2
+  
+  g <- ggplot(df) + 
+    geom_point(aes(x=date, y=units, colour=dataset)) + 
+    facet_wrap( ~ store_nbr) + 
+    theme_bw() +
+    geom_vline(xintercept=sec.2013) + 
+    geom_vline(xintercept=sec.2014)
+  
   ggsave(filename = file.path("pdf", paste("store_item_", item_number, ".pdf", sep = "")), plot = g, scale = 1.5)
 
 }

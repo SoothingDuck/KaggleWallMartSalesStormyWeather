@@ -11,6 +11,7 @@
 
 # R files
 .RData
+Rplots.pdf
 
 # produced vignettes
 vignettes/*.html
@@ -29,3 +30,6 @@ submission/*.csv
 # sqlite
 db.sqlite3
 bin
+
+# pdf
+pdf/*.pdf
