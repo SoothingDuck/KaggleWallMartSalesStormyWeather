@@ -2,6 +2,7 @@ library(RSQLite)
 library(ggplot2)
 library(parallel)
 library(gbm)
+library(lubridate)
 
 con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
 
@@ -33,6 +34,7 @@ for(i in 1:nrow(df.u)) {
   T1.year,
   T1.month,
   T1.week,
+  T1.day,
   T3.tmax,
   T3.tmin,
   T3.tavg,
@@ -86,3 +88,113 @@ for(i in 1:nrow(df.u)) {
 }
 
 dbDisconnect(con)
+
+con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
+
+test.df <- dbGetQuery(con, "
+select
+*
+from
+sales_all_test
+")
+
+result <- data.frame()
+df.u <- unique(test.df[, c("store_nbr", "item_nbr")])
+
+for(i in 1:nrow(df.u)) {
+  store_nbr <- df.u[i, "store_nbr"]
+  item_nbr <- df.u[i, "item_nbr"]
+
+  cat("Evalutation model store", store_nbr, "item", item_nbr, "...\n")
+  
+  gbm.filename <- file.path("DATA", paste("gbm_store_nbr_", store_nbr, "_item_nbr_", item_nbr, ".RData", sep = ""))
+  
+  sql <- paste("
+               
+               select
+               T1.date,
+               T1.year,
+               T1.month,
+               T1.week,
+               T1.day,
+               T3.tmax,
+               T3.tmin,
+               T3.tavg,
+               T3.depart,
+               T3.dewpoint,
+               T3.wetbulb,
+               T3.heat,
+               T3.cool,
+               T3.sunrise,
+               T3.sunset,
+               T3.snowfall,
+               T3.preciptotal,
+               T3.stnpressure,
+               T3.sealevel,
+               T3.resultspeed,
+               T3.resultdir,
+               T3.avgspeed
+               from 
+               sales_all_test T1 inner join
+               key T2 on (T1.store_nbr = T2.store_nbr) inner join
+               weather T3 on (T2.station_nbr = T3.station_nbr)
+               where
+               T1.dataset = 'test' and
+               T1.date = T3.date and
+               T1.store_nbr = ", store_nbr," and
+               T1.item_nbr = ", item_nbr, "
+               ", sep = "")
+  
+  subset.test.df <- dbGetQuery(con, sql)
+
+  load(gbm.filename)
+  
+  prediction.units <- predict(gbm.model, newdata=subset.test.df)
+  
+  result <- rbind(
+    result,
+    data.frame(
+      date=subset.test.df$date,
+      store_nbr=store_nbr,
+      item_nbr=item_nbr,
+      units=prediction.units,
+      dataset='test',
+      year=subset.test.df$year,
+      month=subset.test.df$month,
+      week=subset.test.df$week,
+      day=subset.test.df$day
+      )
+    )
+}
+
+dbDisconnect(con)
+
+con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
+
+other.test.df <- dbGetQuery(con,"
+  select 
+  *
+  from
+  sales_zero_test
+")
+
+dbDisconnect(con)
+
+all.df <- rbind(result, other.test.df)
+sample.submission <- read.csv(file.path("DATA", "sampleSubmission.csv"))
+
+units <- all.df$units
+dates_str <- strftime(origin + all.df$date, "%Y-%m-%d")
+id <- paste(all.df$store_nbr, all.df$item_nbr, dates_str, sep = "_")
+
+submission <- data.frame(
+  id=id,
+  units=ifelse(units < 0, 0, units)
+  )
+
+submission <- submission[match(sample.submission$id, submission$id),]
+
+write.csv(submission, file=file.path("DATA","gbm_try_submission.csv"), 
+          row.names = FALSE,
+          quote = FALSE)
+

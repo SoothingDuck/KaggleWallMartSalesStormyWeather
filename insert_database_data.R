@@ -45,6 +45,7 @@ weather.df$preciptotal <- ifelse(weather.df$preciptotal == "T", 0.0, weather.df$
 weather.df$year <- year(weather.df$date)
 weather.df$month <- month(weather.df$date)
 weather.df$week <- week(weather.df$date)
+weather.df$day <- day(weather.df$date)
 
 dbWriteTable(con, "weather", weather.df)
 
@@ -59,11 +60,13 @@ train.df$date <- ymd(train.df$date)
 train.df$year <- year(train.df$date)
 train.df$month <- month(train.df$date)
 train.df$week <- week(train.df$date)
+train.df$day <- day(train.df$date)
 
 test.df$date <- ymd(test.df$date)
 test.df$year <- year(test.df$date)
 test.df$month <- month(test.df$date)
 test.df$week <- week(test.df$date)
+test.df$day <- day(test.df$date)
 
 train.df$store_nbr <- factor(train.df$store_nbr)
 train.df$item_nbr <- factor(train.df$item_nbr)
@@ -74,9 +77,6 @@ test.df$item_nbr <- factor(test.df$item_nbr)
 test.df$units <- NA
 
 all.df <- rbind(train.df, test.df)
-all.df$year <- year(all.df$date)
-all.df$month <- month(all.df$date)
-all.df$week <- week(all.df$date)
 
 dbWriteTable(con, "sales", all.df)
 
