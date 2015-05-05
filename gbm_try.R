@@ -63,18 +63,24 @@ for(i in 1:nrow(df.u)) {
   
   train.df <- dbGetQuery(con, sql)
 
+  indice.cols.to.keep <- as.integer(which(! apply(train.df, 2, function(x) { all(is.na(x)) })))
+  
+  train.df <- train.df[, indice.cols.to.keep]
+  
   gbm.model <- gbm(
       units ~ .,
       data = train.df,
       distribution = "gaussian",
-      n.trees = 2000,
+      n.trees = 10000,
       interaction.depth = 2,
-      n.minobsinnode = 10,
-      shrinkage = 0.005,
+      n.minobsinnode = 5,
+      shrinkage = 0.001,
       bag.fraction = 0.5,
       train.fraction = 0.95,
       verbose = TRUE
     )
+  
+  prediction <- predict(gbm.model, newdata=train.df)
   
   save(gbm.model, file = gbm.filename)
 }
