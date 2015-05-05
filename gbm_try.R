@@ -35,6 +35,7 @@ for(i in 1:nrow(df.u)) {
   T1.month,
   T1.week,
   T1.day,
+  T1.week_day,
   T3.tmax,
   T3.tmin,
   T3.tavg,
@@ -68,9 +69,13 @@ for(i in 1:nrow(df.u)) {
   indice.cols.to.keep <- as.integer(which(! apply(train.df, 2, function(x) { all(is.na(x)) })))
   
   train.df <- train.df[, indice.cols.to.keep]
-  
+  train.df$year <- factor(train.df$year)
+  train.df$month <- factor(train.df$month)
+  train.df$week_day <- factor(train.df$week_day)
+  train.df$ecart <- with(train.df, tmax - tmin)
+    
   gbm.model <- gbm(
-      units ~ .,
+      units ~ . - day,
       data = train.df,
       distribution = "gaussian",
       n.trees = 10000,
@@ -117,6 +122,7 @@ for(i in 1:nrow(df.u)) {
                T1.month,
                T1.week,
                T1.day,
+               T1.week_day,
                T3.tmax,
                T3.tmin,
                T3.tavg,
@@ -146,7 +152,12 @@ for(i in 1:nrow(df.u)) {
                ", sep = "")
   
   subset.test.df <- dbGetQuery(con, sql)
-
+  
+  subset.test.df$year <- factor(subset.test.df$year)
+  subset.test.df$month <- factor(subset.test.df$month)
+  subset.test.df$week_day <- factor(subset.test.df$week_day)
+  subset.test.df$ecart <- with(subset.test.df, tmax - tmin)
+  
   load(gbm.filename)
   
   prediction.units <- predict(gbm.model, newdata=subset.test.df)
@@ -158,11 +169,11 @@ for(i in 1:nrow(df.u)) {
       store_nbr=store_nbr,
       item_nbr=item_nbr,
       units=prediction.units,
-      dataset='test',
       year=subset.test.df$year,
       month=subset.test.df$month,
       week=subset.test.df$week,
-      day=subset.test.df$day
+      day=subset.test.df$day,
+      week_day=subset.test.df$week_day
       )
     )
 }
