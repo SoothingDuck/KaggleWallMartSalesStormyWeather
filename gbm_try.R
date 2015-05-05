@@ -1,88 +1,82 @@
-library(lubridate)
+library(RSQLite)
+library(ggplot2)
+library(parallel)
 library(gbm)
 
-set.seed(42)
-train.df <- read.csv(file.path("DATA", "alternate_train.csv"), stringsAsFactor = FALSE)
-test.df <- read.csv(file.path("DATA", "alternate_test.csv"), stringsAsFactor = FALSE)
+con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
 
-train.df$month <- factor(month(train.df$date))
-test.df$month <- factor(month(test.df$date))
+df <- dbGetQuery(con, "
+select
+*
+from
+sales_all_test
+")
 
-train.df$station_nbr <- factor(train.df$station_nbr)
-test.df$station_nbr <- factor(test.df$station_nbr)
+dbDisconnect(con)
 
-train.df$store_nbr <- factor(train.df$store_nbr)
-test.df$store_nbr <- factor(test.df$store_nbr)
+con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
 
-train.df$item_nbr <- factor(train.df$item_nbr)
-test.df$item_nbr <- factor(test.df$item_nbr)
+df.u <- unique(df[, c("store_nbr", "item_nbr")])
 
-train.df$date <- ymd(train.df$date)
-test.df$date <- ymd(test.df$date)
+for(i in 1:nrow(df.u)) {
+  store_nbr <- df.u[i, "store_nbr"]
+  item_nbr <- df.u[i, "item_nbr"]
+  
+  cat("Generation model store", store_nbr, "item", item_nbr, "...\n")
+  
+  gbm.filename <- file.path("DATA", paste("gbm_store_nbr_", store_nbr, "_item_nbr_", item_nbr, ".RData", sep = ""))
+  
+  sql <- paste("
+  
+  select
+  T1.units,
+  T1.year,
+  T1.month,
+  T1.week,
+  T3.tmax,
+  T3.tmin,
+  T3.tavg,
+  T3.depart,
+  T3.dewpoint,
+  T3.wetbulb,
+  T3.heat,
+  T3.cool,
+  T3.sunrise,
+  T3.sunset,
+  T3.snowfall,
+  T3.preciptotal,
+  T3.stnpressure,
+  T3.sealevel,
+  T3.resultspeed,
+  T3.resultdir,
+  T3.avgspeed
+  from 
+  sales T1 inner join
+  key T2 on (T1.store_nbr = T2.store_nbr) inner join
+  weather T3 on (T2.station_nbr = T3.station_nbr)
+  where
+  T1.dataset = 'train' and
+  T1.date = T3.date and
+  T1.store_nbr = ", store_nbr," and
+  T1.item_nbr = ", item_nbr, "
+  ", sep = "")
+  
+  train.df <- dbGetQuery(con, sql)
 
-m <- data.frame(model.matrix(~ item_nbr - 1, test.df))
-test.df <- cbind(test.df, m)
-#test.df <- test.df[, -which(names(test.df) == "item_nbr")]
+  gbm.model <- gbm(
+      units ~ .,
+      data = train.df,
+      distribution = "gaussian",
+      n.trees = 2000,
+      interaction.depth = 2,
+      n.minobsinnode = 10,
+      shrinkage = 0.005,
+      bag.fraction = 0.5,
+      train.fraction = 0.95,
+      verbose = TRUE
+    )
+  
+  save(gbm.model, file = gbm.filename)
+}
 
-m <- data.frame(model.matrix(~ store_nbr - 1, test.df))
-test.df <- cbind(test.df, m)
-#test.df <- test.df[, -which(names(test.df) == "store_nbr")]
-
-m <- data.frame(model.matrix(~ station_nbr - 1, test.df))
-test.df <- cbind(test.df, m)
-#test.df <- test.df[, -which(names(test.df) == "station_nbr")]
-
-
-# subset
-train.df <- train.df[train.df$store_nbr != 35,]
-
-# subset
-indices <- sample(1:nrow(train.df), nrow(train.df)*.05)
-train.df <- train.df[indices,]
-
-m <- data.frame(model.matrix(~ item_nbr - 1, train.df))
-train.df <- cbind(train.df, m)
-#train.df <- train.df[, -which(names(train.df) == "item_nbr")]
-
-m <- data.frame(model.matrix(~ store_nbr - 1, train.df))
-train.df <- cbind(train.df, m)
-#train.df <- train.df[, -which(names(train.df) == "store_nbr")]
-train.df <- train.df[, -which(names(train.df) == "store_nbr35")]
-
-m <- data.frame(model.matrix(~ station_nbr - 1, train.df))
-train.df <- cbind(train.df, m)
-#train.df <- train.df[, -which(names(train.df) == "station_nbr")]
-train.df <- train.df[, -which(names(train.df) == "station_nbr5")]
-
-# GBM
-gbm.model <- gbm(
-  units ~ 
-    . - date - item_nbr - store_nbr - station_nbr,
-  distribution = "gaussian",
-  data = train.df,
-  n.trees = 1000,
-  interaction.depth = 5,
-  shrinkag = 0.01,
-  train.fraction = 0.9,
-  n.minobsinnode = 50,
-  verbose = TRUE
-  )
-
-prediction.train <- predict(gbm.model, newdata=train.df)
-prediction.test <- predict(gbm.model, newdata=test.df)
-
-test.df$prediction <- prediction.test
-
-sample.submission <- read.csv(file.path("DATA", "sampleSubmission.csv"), stringsAsFactor = FALSE)
-
-submission <- data.frame(
-    id = with(test.df, paste(as.character(store_nbr), as.character(item_nbr), as.character(date), sep = "_")),
-    units=test.df$prediction
-  )
-
-submission$id <- as.character(submission$id)
-submission <- submission[order(submission$id),]
-
-submission <- submission[match(sample.submission$id, submission$id),]
-
-write.csv(x=submission, file=file.path("submission", "gbm_try_submission.csv"), row.names = FALSE, quote = FALSE)
+dbDisconnect(con)

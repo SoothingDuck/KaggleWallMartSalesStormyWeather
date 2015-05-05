@@ -23,6 +23,8 @@ DATA/*.pdf
 .Rproj.user
 submission/*.csv
 
+DATA/*.RData
+
 # vim trash files
 *~
 *.swp

@@ -161,5 +161,12 @@ T2.date is null
 dbRemoveTable(con, "sales_all_test")
 dbWriteTable(con, "sales_all_test", df)
 
+# All test 
+df <- dbGetQuery(con, "
+select
+*
+from
+sales_all_test
+")
 
 dbDisconnect(con)
