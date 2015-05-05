@@ -79,10 +79,10 @@ for(i in 1:nrow(df.u)) {
       data = train.df,
       distribution = "gaussian",
       n.trees = 10000,
-      interaction.depth = 2,
+      interaction.depth = 5,
       n.minobsinnode = 5,
       shrinkage = 0.001,
-      bag.fraction = 0.5,
+      bag.fraction = 0.9,
       train.fraction = 0.95,
       verbose = TRUE
     )
