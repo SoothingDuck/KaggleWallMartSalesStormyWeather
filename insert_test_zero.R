@@ -16,6 +16,19 @@ df <- dbGetQuery(con,"
 # dbRemoveTable(con, "sales_all_test")
 dbWriteTable(con, "sales_all_test", df)
 
+# Recuperation de toutes les lignes de train
+df <- dbGetQuery(con,"
+  select 
+  *
+  from
+  sales
+  where
+  dataset = 'train'
+")
+
+# dbRemoveTable(con, "sales_all_train")
+dbWriteTable(con, "sales_all_train", df)
+
 # Agrégation à l'année
 df <- dbGetQuery(con,"
   select 
@@ -60,6 +73,34 @@ df <- dbGetQuery(con,"
 # dbRemoveTable(con, "sales_zero_test")
 dbWriteTable(con, "sales_zero_test", df)
 
+# Lignes de train avec 0 item à l'année
+df <- dbGetQuery(con,"
+                 select 
+                 T1.date as date,
+                 T1.store_nbr as store_nbr,
+                 T1.item_nbr as item_nbr,
+                 0 as units,
+                 'train' as dataset,
+                 T1.year as year,
+                 T1.month as month,
+                 T1.week as week,
+                 T1.day as day,
+                 T1.week_day as week_day
+                 from
+                 sales_all_train T1 inner join store_item_year_avg T2 on (
+                 T1.store_nbr = T2.store_nbr and
+                 T1.item_nbr = T2.item_nbr and
+                 T1.year = T2.year
+                 )
+                 where
+                 T1.dataset = 'train'
+                 and
+                 T2.total_units_year = 0
+                 ")
+
+# dbRemoveTable(con, "sales_zero_train")
+dbWriteTable(con, "sales_zero_train", df)
+
 # Delete 
 df <- dbGetQuery(con, "
   select
@@ -74,8 +115,8 @@ df <- dbGetQuery(con, "
   T1.day as day,
   T1.week_day as week_day
   from
-  sales_all_test T1 left outer join
-  sales_zero_test T2 on (
+  sales_all_train T1 left outer join
+  sales_zero_train T2 on (
     T1.date = T2.date and
     T1.store_nbr = T2.store_nbr and
     T1.item_nbr = T2.item_nbr and
@@ -88,8 +129,8 @@ df <- dbGetQuery(con, "
   T2.date is null
 ")
 
-dbRemoveTable(con, "sales_all_test")
-dbWriteTable(con, "sales_all_test", df)
+dbRemoveTable(con, "sales_all_train")
+dbWriteTable(con, "sales_all_train", df)
 
 # Agrégation au mois
 df <- dbGetQuery(con,"
@@ -176,6 +217,74 @@ T2.date is null
 dbRemoveTable(con, "sales_all_test")
 dbWriteTable(con, "sales_all_test", df)
 
+# Lignes de train avec 0 item au mois
+df <- dbGetQuery(con,"
+  select 
+                 T1.date as date,
+                 T1.store_nbr as store_nbr,
+                 T1.item_nbr as item_nbr,
+                 0 as units,
+                 T1.year as year,
+                 T1.month as month,
+                 T1.week as week,
+                 T1.day as day,
+                 T1.week_day as week_day
+                 from
+                 sales_all_train T1 inner join store_item_month_avg T2 on (
+                 T1.store_nbr = T2.store_nbr and
+                 T1.item_nbr = T2.item_nbr and
+                 T1.year = T2.year and
+                 T1.month = T2.month
+                 )
+                 where
+                 T1.dataset = 'train'
+                 and
+                 T2.total_units_month = 0
+                 union
+                 select
+                 date,
+                 store_nbr,
+                 item_nbr,
+                 units,
+                 year,
+                 month,
+                 week,
+                 day,
+                 week_day
+                 from
+                 sales_zero_train
+                 ")
+
+dbRemoveTable(con, "sales_zero_train")
+dbWriteTable(con, "sales_zero_train", df)
+
+# Delete 
+df <- dbGetQuery(con, "
+                 select
+                 T1.date as date,
+                 T1.store_nbr as store_nbr,
+                 T1.item_nbr as item_nbr,
+                 T1.units as units,
+                 T1.dataset as dataset,
+                 T1.year as year,
+                 T1.month as month,
+                 T1.week as week,
+                 T1.day as day,
+                 T1.week_day as week_day
+                 from
+                 sales_all_train T1 left outer join
+                 sales_zero_train T2 on (
+                 T1.date = T2.date and
+                 T1.store_nbr = T2.store_nbr and
+                 T1.item_nbr = T2.item_nbr
+                 )
+                 where
+                 T2.date is null
+                 ")
+
+dbRemoveTable(con, "sales_all_train")
+dbWriteTable(con, "sales_all_train", df)
+
 # All test 
 df <- dbGetQuery(con, "
 select
@@ -183,5 +292,12 @@ select
 from
 sales_all_test
 ")
+
+# Creation d'index
+dbGetQuery(con,"create unique index sales_all_train_store_nbr_idx on sales_all_train (store_nbr, item_nbr, date)")
+dbGetQuery(con,"create unique index sales_zero_train_store_nbr_idx on sales_zero_train (store_nbr, item_nbr, date)")
+dbGetQuery(con,"create unique index sales_all_test_store_nbr_idx on sales_all_test (store_nbr, item_nbr, date)")
+dbGetQuery(con,"create unique index sales_zero_test_store_nbr_idx on sales_zero_test (store_nbr, item_nbr, date)")
+
 
 dbDisconnect(con)
