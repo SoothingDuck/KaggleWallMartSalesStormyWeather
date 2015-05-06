@@ -56,41 +56,6 @@ sales.df <- dbGetQuery(con,"
   select * from sales
 ")
 
-df <- dbGetQuery(con,"
-  select 
-  store_nbr,
-  item_nbr,
-  year,
-  week,
-  sum(units) as total_units_week,
-  avg(units) as avg_units_week
-  from
-  sales
-  group by 1,2,3,4
-  having avg(units) > 0 and avg(units) < 500
-")
-
-dbWriteTable(con, "store_item_week_avg", df)
-
-
-ggplot(subset(df, year == 2013)) + geom_point(aes(x=week,y=avg_units_week, colour=item_nbr)) + facet_wrap(~ store_nbr)
-
-
-df <- dbGetQuery(con,"
-  select 
-  store_nbr,
-  item_nbr,
-  year,
-  month,
-  sum(units) as total_units_month,
-  avg(units) as avg_units_month
-  from
-  sales
-  group by 1,2,3,4
-  having avg(units) > 0 and avg(units) < 500
-")
-
-dbWriteTable(con, "store_item_month_avg", df)
 
 
 
@@ -104,10 +69,22 @@ for(item_number in 1:111) {
                              s.dataset,
                              coalesce(s.units, -1) as units
                              from
-                             sales s,
+                             sales s left outer join sales_zero_test t on
+                             (  
+                                s.date = t.date and
+                                s.item_nbr = t.item_nbr and
+                                s.store_nbr = t.store_nbr
+                             ) left outer join sales_zero_train u on
+                             (
+                                s.date = u.date and
+                                s.item_nbr = u.item_nbr and
+                                s.store_nbr = u.store_nbr
+                             ),
                              key k,
                              weather w
                              where
+                             t.date is null and
+                             u.date is null and
                              s.store_nbr = k.store_nbr and
                              k.station_nbr = w.station_nbr and
                              s.date = w.date and
