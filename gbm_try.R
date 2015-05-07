@@ -3,6 +3,12 @@ library(ggplot2)
 library(parallel)
 library(gbm)
 library(lubridate)
+library(plyr)
+
+
+rmsle <- function(y, ypred) {
+  return(sqrt(mean((log(y+1)-log(ypred+1))**2)))
+}
 
 con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
 
@@ -94,6 +100,8 @@ for(i in 1:nrow(df.u)) {
 
 dbDisconnect(con)
 
+# Scoring
+
 con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
 
 test.df <- dbGetQuery(con, "
@@ -103,6 +111,98 @@ from
 sales_all_test
 ")
 
+dbDisconnect(con)
+
+con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
+
+result <- data.frame()
+df.u <- unique(test.df[, c("store_nbr", "item_nbr")])
+
+for(i in 1:nrow(df.u)) {
+  store_nbr <- df.u[i, "store_nbr"]
+  item_nbr <- df.u[i, "item_nbr"]
+  
+  cat("Evalutation model store", store_nbr, "item", item_nbr, "...\n")
+  
+  gbm.filename <- file.path("DATA", paste("gbm_store_nbr_", store_nbr, "_item_nbr_", item_nbr, ".RData", sep = ""))
+  
+  sql <- paste("
+               
+               select
+               T1.units,
+               T1.date,
+               T1.year,
+               T1.month,
+               T1.week,
+               T1.day,
+               T1.week_day,
+               T3.tmax,
+               T3.tmin,
+               T3.tavg,
+               T3.depart,
+               T3.dewpoint,
+               T3.wetbulb,
+               T3.heat,
+               T3.cool,
+               T3.sunrise,
+               T3.sunset,
+               T3.snowfall,
+               T3.preciptotal,
+               T3.stnpressure,
+               T3.sealevel,
+               T3.resultspeed,
+               T3.resultdir,
+               T3.avgspeed
+               from 
+               sales_all_train T1 inner join
+               key T2 on (T1.store_nbr = T2.store_nbr) inner join
+               weather T3 on (T2.station_nbr = T3.station_nbr)
+               where
+               T1.dataset = 'train' and
+               T1.date = T3.date and
+               T1.store_nbr = ", store_nbr," and
+               T1.item_nbr = ", item_nbr, "
+               ", sep = "")
+  
+  train.df <- dbGetQuery(con, sql)
+  
+  train.df$year <- factor(train.df$year)
+  train.df$month <- factor(train.df$month)
+  train.df$week_day <- factor(train.df$week_day)
+  train.df$ecart <- with(train.df, tmax - tmin)
+  
+  load(gbm.filename)
+  
+  for(n.tree in as.integer(seq(1, 10000, length.out = 50))) {
+    cat("Prediction store", store_nbr, "item", item_nbr,"n.tree", n.tree, "...\n")
+    prediction.units <- predict(gbm.model, newdata=train.df, n.trees=n.tree)
+    
+    score <- rmsle(train.df$units, prediction.units)
+    
+    result <- rbind(
+      result,
+      data.frame(
+        store_nbr=store_nbr,
+        item_nbr=item_nbr,
+        n.tree=n.tree,
+        score=score
+      )
+    )
+    
+  }
+}
+
+write.csv(result, file="gbm_try_scoring.csv")
+
+agg <- ddply(result,
+             .)
+
+ggplot(result) + geom_point(aes(x=n.tree, y=score, colour=item_nbr)) + facet_wrap(~ store_nbr)
+
+dbDisconnect(con)
+
+
+# Evaluation test
 result <- data.frame()
 df.u <- unique(test.df[, c("store_nbr", "item_nbr")])
 
