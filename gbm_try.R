@@ -37,7 +37,6 @@ for(i in 1:nrow(df.u)) {
   
   select
   T1.units,
-  T1.year || T1.month as year_month,
   T1.week_day,
 
   T3.tmax_day,
@@ -131,7 +130,7 @@ for(i in 1:nrow(df.u)) {
   T3.avgspeed_day_plus_seven_diff
 
   from 
-  sales T1 inner join
+  sales_all_train T1 inner join
   key T2 on (T1.store_nbr = T2.store_nbr) inner join
   weather_agg T3 on (T2.station_nbr = T3.station_nbr)
   where
@@ -150,19 +149,19 @@ for(i in 1:nrow(df.u)) {
   indice.cols.to.keep <- as.integer(which(! apply(train.df, 2, function(x) { all(is.na(x)) })))
   
   train.df <- train.df[, indice.cols.to.keep]
-  train.df$year_month <- factor(train.df$year_month)
+  # train.df$year_month <- factor(train.df$year_month)
   train.df$week_day <- factor(train.df$week_day)
     
   gbm.model <- gbm(
       units ~ .,
       data = train.df,
-      distribution = "laplace",
-      n.trees = 10000,
-      interaction.depth = 5,
+      distribution = "gaussian",
+      n.trees = 2000,
+      interaction.depth = 10,
       n.minobsinnode = 5,
       shrinkage = 0.001,
       bag.fraction = 0.9,
-      train.fraction = 0.95,
+      train.fraction = 0.9,
       verbose = TRUE
     )
   
@@ -200,9 +199,9 @@ for(i in 1:nrow(df.u)) {
   gbm.filename <- file.path("DATA", paste("gbm_store_nbr_", store_nbr, "_item_nbr_", item_nbr, ".RData", sep = ""))
   
   sql <- paste("
+
 select
   T1.units,
-  T1.year || T1.month as year_month,
   T1.week_day,
 
 T3.tmax_day,
@@ -296,7 +295,7 @@ T3.resultdir_day_plus_seven_diff,
 T3.avgspeed_day_plus_seven_diff
 
 from 
-sales T1 inner join
+sales_all_train T1 inner join
 key T2 on (T1.store_nbr = T2.store_nbr) inner join
 weather_agg T3 on (T2.station_nbr = T3.station_nbr)
 where
@@ -315,12 +314,12 @@ T1.item_nbr = ", item_nbr, "
   indice.cols.to.keep <- as.integer(which(! apply(train.df, 2, function(x) { all(is.na(x)) })))
   
   train.df <- train.df[, indice.cols.to.keep]
-  train.df$year_month <- factor(train.df$year_month)
+  #train.df$year_month <- factor(train.df$year_month)
   train.df$week_day <- factor(train.df$week_day)
   
   load(gbm.filename)
   
-  for(n.tree in as.integer(seq(1, 10000, length.out = 50))) {
+  for(n.tree in as.integer(seq(1, 2000, length.out = 50))) {
     cat("Prediction store", store_nbr, "item", item_nbr,"n.tree", n.tree, "...\n")
     prediction.units <- predict(gbm.model, newdata=train.df, n.trees=n.tree)
     
