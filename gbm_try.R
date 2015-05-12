@@ -138,14 +138,16 @@ for(i in 1:nrow(df.u)) {
   T3.avgspeed_day_plus_seven_diff
 
   from 
-  sales_all_train T1 inner join
+  sales T1 inner join
   key T2 on (T1.store_nbr = T2.store_nbr) inner join
   weather_agg T3 on (T2.station_nbr = T3.station_nbr)
   where
   T1.dataset = 'train' and
   T1.date = T3.date and
   T1.store_nbr = ", store_nbr," and
-  T1.item_nbr = ", item_nbr, "
+  T1.item_nbr = ", item_nbr, " and
+  T1.units < 1000 and
+  T1.year in (2013, 2014)
   ", sep = "")
   
   train.df <- dbGetQuery(con, sql)
@@ -226,6 +228,7 @@ for(i in 1:nrow(df.u)) {
 }
 
 write.csv(result, file="gbm_try_scoring.csv")
+result <- read.csv("gbm_try_scoring.csv", stringsAsFactors= FALSE)
 
 m <- melt(result, id.vars=c("store_nbr", "item_nbr", "n.tree"))
 
