@@ -4,12 +4,15 @@ library(parallel)
 library(gbm)
 library(lubridate)
 library(plyr)
-
+library(reshape2)
 
 rmsle <- function(y, ypred) {
   return(sqrt(mean((log(y+1)-log(ypred+1))**2)))
 }
 
+##########################################################
+########## Evaluation modele
+##########################################################
 con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
 
 df <- dbGetQuery(con, "
@@ -37,7 +40,12 @@ for(i in 1:nrow(df.u)) {
   
   select
   T1.units,
+
   T1.week_day,
+  T1.year,
+  T1.month,
+  T1.day,
+  T1.date,
 
   T3.tmax_day,
   T3.tmin_day,
@@ -149,19 +157,21 @@ for(i in 1:nrow(df.u)) {
   indice.cols.to.keep <- as.integer(which(! apply(train.df, 2, function(x) { all(is.na(x)) })))
   
   train.df <- train.df[, indice.cols.to.keep]
-  # train.df$year_month <- factor(train.df$year_month)
   train.df$week_day <- factor(train.df$week_day)
-    
+  train.df$year <- factor(train.df$year)
+  train.df$month <- factor(train.df$month)
+  train.df$day <- factor(train.df$day)
+  
   gbm.model <- gbm(
-      units ~ .,
+      I(log1p(units)) ~ . - date - day,
       data = train.df,
       distribution = "gaussian",
-      n.trees = 2000,
-      interaction.depth = 10,
+      n.trees = 10000,
+      interaction.depth = 5,
       n.minobsinnode = 5,
       shrinkage = 0.001,
       bag.fraction = 0.9,
-      train.fraction = 0.9,
+      train.fraction = 0.95,
       verbose = TRUE
     )
   
@@ -172,7 +182,9 @@ for(i in 1:nrow(df.u)) {
 
 dbDisconnect(con)
 
-# Scoring
+##########################################################
+########## Scoring
+##########################################################
 
 con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
 
@@ -197,152 +209,51 @@ for(i in 1:nrow(df.u)) {
   cat("Evalutation model store", store_nbr, "item", item_nbr, "...\n")
   
   gbm.filename <- file.path("DATA", paste("gbm_store_nbr_", store_nbr, "_item_nbr_", item_nbr, ".RData", sep = ""))
-  
-  sql <- paste("
-
-select
-  T1.units,
-  T1.week_day,
-
-T3.tmax_day,
-T3.tmin_day,
-T3.tavg_day,
-T3.depart_day,
-T3.dewpoint_day,
-T3.wetbulb_day,
-T3.heat_day,
-T3.cool_day,
-T3.sunrise_day,
-T3.sunset_day,
-T3.snowfall_day,
-T3.preciptotal_day,
-T3.stnpressure_day,
-T3.sealevel_day,
-T3.resultspeed_day,
-T3.resultdir_day,
-T3.avgspeed_day,
-
-T3.tmax_day_plus_two,
-T3.tmin_day_plus_two,
-T3.tavg_day_plus_two,
-T3.depart_day_plus_two,
-T3.dewpoint_day_plus_two,
-T3.wetbulb_day_plus_two,
-T3.heat_day_plus_two,
-T3.cool_day_plus_two,
-T3.sunrise_day_plus_two,
-T3.sunset_day_plus_two,
-T3.snowfall_day_plus_two,
-T3.preciptotal_day_plus_two,
-T3.stnpressure_day_plus_two,
-T3.sealevel_day_plus_two,
-T3.resultspeed_day_plus_two,
-T3.resultdir_day_plus_two,
-T3.avgspeed_day_plus_two,
-
-T3.tmax_day_plus_two_diff,
-T3.tmin_day_plus_two_diff,
-T3.tavg_day_plus_two_diff,
-T3.depart_day_plus_two_diff,
-T3.dewpoint_day_plus_two_diff,
-T3.wetbulb_day_plus_two_diff,
-T3.heat_day_plus_two_diff,
-T3.cool_day_plus_two_diff,
-T3.sunrise_day_plus_two_diff,
-T3.sunset_day_plus_two_diff,
-T3.snowfall_day_plus_two_diff,
-T3.preciptotal_day_plus_two_diff,
-T3.stnpressure_day_plus_two_diff,
-T3.sealevel_day_plus_two_diff,
-T3.resultspeed_day_plus_two_diff,
-T3.resultdir_day_plus_two_diff,
-T3.avgspeed_day_plus_two_diff,
-
-T3.tmax_day_plus_seven,
-T3.tmin_day_plus_seven,
-T3.tavg_day_plus_seven,
-T3.depart_day_plus_seven,
-T3.dewpoint_day_plus_seven,
-T3.wetbulb_day_plus_seven,
-T3.heat_day_plus_seven,
-T3.cool_day_plus_seven,
-T3.sunrise_day_plus_seven,
-T3.sunset_day_plus_seven,
-T3.snowfall_day_plus_seven,
-T3.preciptotal_day_plus_seven,
-T3.stnpressure_day_plus_seven,
-T3.sealevel_day_plus_seven,
-T3.resultspeed_day_plus_seven,
-T3.resultdir_day_plus_seven,
-T3.avgspeed_day_plus_seven,
-
-T3.tmax_day_plus_seven_diff,
-T3.tmin_day_plus_seven_diff,
-T3.tavg_day_plus_seven_diff,
-T3.depart_day_plus_seven_diff,
-T3.dewpoint_day_plus_seven_diff,
-T3.wetbulb_day_plus_seven_diff,
-T3.heat_day_plus_seven_diff,
-T3.cool_day_plus_seven_diff,
-T3.sunrise_day_plus_seven_diff,
-T3.sunset_day_plus_seven_diff,
-T3.snowfall_day_plus_seven_diff,
-T3.preciptotal_day_plus_seven_diff,
-T3.stnpressure_day_plus_seven_diff,
-T3.sealevel_day_plus_seven_diff,
-T3.resultspeed_day_plus_seven_diff,
-T3.resultdir_day_plus_seven_diff,
-T3.avgspeed_day_plus_seven_diff
-
-from 
-sales_all_train T1 inner join
-key T2 on (T1.store_nbr = T2.store_nbr) inner join
-weather_agg T3 on (T2.station_nbr = T3.station_nbr)
-where
-T1.dataset = 'train' and
-T1.date = T3.date and
-T1.store_nbr = ", store_nbr," and
-T1.item_nbr = ", item_nbr, "
-               ", sep = "")
-  
-  train.df <- dbGetQuery(con, sql)
-  
-  for(diff.col in names(train.df)[grepl("_diff", names(train.df))]) {
-    train.df[, diff.col] <- as.numeric(train.df[, diff.col])
-  }
-  
-  indice.cols.to.keep <- as.integer(which(! apply(train.df, 2, function(x) { all(is.na(x)) })))
-  
-  train.df <- train.df[, indice.cols.to.keep]
-  #train.df$year_month <- factor(train.df$year_month)
-  train.df$week_day <- factor(train.df$week_day)
-  
+    
   load(gbm.filename)
-  
-  for(n.tree in as.integer(seq(1, 2000, length.out = 50))) {
-    cat("Prediction store", store_nbr, "item", item_nbr,"n.tree", n.tree, "...\n")
-    prediction.units <- predict(gbm.model, newdata=train.df, n.trees=n.tree)
     
-    score <- rmsle(train.df$units, prediction.units)
-    
-    result <- rbind(
-      result,
-      data.frame(
-        store_nbr=store_nbr,
-        item_nbr=item_nbr,
-        n.tree=n.tree,
-        score=score
-      )
+  result <- rbind(
+    result,
+    data.frame(
+      store_nbr=store_nbr,
+      item_nbr=item_nbr,
+      n.tree=seq(1, gbm.model$n.trees),
+      train.error=gbm.model$train.error,
+      valid.error=gbm.model$valid.error      
     )
+  )
     
-  }
 }
 
 write.csv(result, file="gbm_try_scoring.csv")
 
+m <- melt(result, id.vars=c("store_nbr", "item_nbr", "n.tree"))
 
-ggplot(result) + geom_point(aes(x=n.tree, y=score, colour=item_nbr)) + facet_wrap(~ store_nbr)
-stop()
+ggplot(m) + 
+  geom_point(aes(x=n.tree, y=value, colour=item_nbr)) + 
+  facet_grid(variable ~ store_nbr) +
+  theme_bw()
+
+# store 37
+ggplot(subset(m, store_nbr == 37)) + 
+  geom_point(aes(x=n.tree, y=value, colour=item_nbr)) + 
+  facet_grid(variable ~ store_nbr) +
+  theme_bw()
+
+
+dbDisconnect(con)
+
+##########################################################
+########## Evaluation sur jeu de test
+##########################################################
+con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
+
+df <- dbGetQuery(con, "
+select
+*
+from
+sales_all_test
+")
 
 dbDisconnect(con)
 
@@ -363,12 +274,13 @@ for(i in 1:nrow(df.u)) {
   sql <- paste("
                
 select
-T1.date,
+
+T1.week_day,
 T1.year,
 T1.month,
-T1.week,
 T1.day,
-T1.week_day,
+T1.date,
+
 T3.tmax_day,
 T3.tmin_day,
 T3.tavg_day,
@@ -458,7 +370,7 @@ T3.sealevel_day_plus_seven_diff,
 T3.resultspeed_day_plus_seven_diff,
 T3.resultdir_day_plus_seven_diff,
 T3.avgspeed_day_plus_seven_diff
-
+               
 from 
 sales_all_test T1 inner join
 key T2 on (T1.store_nbr = T2.store_nbr) inner join
@@ -476,13 +388,14 @@ T1.item_nbr = ", item_nbr, "
     subset.test.df[, diff.col] <- as.numeric(subset.test.df[, diff.col])
   }
       
+  subset.test.df$week_day <- factor(subset.test.df$week_day)
   subset.test.df$year <- factor(subset.test.df$year)
   subset.test.df$month <- factor(subset.test.df$month)
-  subset.test.df$week_day <- factor(subset.test.df$week_day)
+  subset.test.df$day <- factor(subset.test.df$day)
   
   load(gbm.filename)
   
-  prediction.units <- predict(gbm.model, newdata=subset.test.df)
+  prediction.units <- expm1(predict(gbm.model, newdata=subset.test.df))
   
   result <- rbind(
     result,
@@ -513,6 +426,11 @@ other.test.df <- dbGetQuery(con,"
 
 dbDisconnect(con)
 
+result$year <- as.numeric(as.character(result$year))
+result$month <- as.numeric(as.character(result$month))
+result$week <- as.numeric(as.character(result$week))
+result$day <- as.numeric(as.character(result$day))
+
 all.df <- rbind(result, other.test.df)
 sample.submission <- read.csv(file.path("DATA", "sampleSubmission.csv"))
 
@@ -527,7 +445,7 @@ submission <- data.frame(
 
 submission <- submission[match(sample.submission$id, submission$id),]
 
-write.csv(submission, file=file.path("DATA","gbm_try_submission.csv"), 
+write.csv(submission, file=file.path("DATA","gbm_try_submission_expm1.csv"), 
           row.names = FALSE,
           quote = FALSE)
 

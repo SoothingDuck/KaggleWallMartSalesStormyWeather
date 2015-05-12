@@ -25,6 +25,9 @@ submission/*.csv
 
 DATA/*.RData
 
+
+*.csv
+
 # vim trash files
 *~
 *.swp
