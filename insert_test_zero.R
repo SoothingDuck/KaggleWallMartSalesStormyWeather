@@ -170,6 +170,9 @@ df <- dbGetQuery(con,"
 # dbRemoveTable(con, "store_item_year_avg")
 dbWriteTable(con, "store_item_year_avg", df)
 
+# index store_item_year_avg
+dbGetQuery(con,"create index store_item_year_avg_idx on store_item_year_avg (store_nbr, item_nbr)")
+
 # Lignes de test avec 0 item à l'année
 df <- dbGetQuery(con,"
   select 
@@ -273,6 +276,9 @@ df <- dbGetQuery(con,"
 
 # dbRemoveTable(con, "store_item_month_avg")
 dbWriteTable(con, "store_item_month_avg", df)
+
+# index store_item_month_avg
+dbGetQuery(con,"create index store_item_month_avg_idx on store_item_month_avg (store_nbr, item_nbr)")
 
 # Lignes de test avec 0 item au mois
 df <- dbGetQuery(con,"

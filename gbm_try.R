@@ -135,12 +135,32 @@ for(i in 1:nrow(df.u)) {
   T3.sealevel_day_plus_seven_diff,
   T3.resultspeed_day_plus_seven_diff,
   T3.resultdir_day_plus_seven_diff,
-  T3.avgspeed_day_plus_seven_diff
+  T3.avgspeed_day_plus_seven_diff,
+
+  T4.total_units_year,
+  T4.avg_units_year,
+
+  T5.total_units_month,
+  T5.avg_units_month,
+
+  T4.total_units_year - T5.total_units_month as total_units_year_month_diff,
+  T4.avg_units_year - T5.avg_units_month as avg_units_year_month_diff
 
   from 
   sales T1 inner join
   key T2 on (T1.store_nbr = T2.store_nbr) inner join
-  weather_agg T3 on (T2.station_nbr = T3.station_nbr)
+  weather_agg T3 on (T2.station_nbr = T3.station_nbr) inner join
+  store_item_year_avg T4 on (
+    T1.store_nbr = T4.store_nbr and
+    T1.item_nbr = T4.item_nbr and
+    T1.year = T4.year
+  ) inner join
+  store_item_month_avg T5 on (
+    T1.store_nbr = T5.store_nbr and
+    T1.item_nbr = T5.item_nbr and
+    T1.year = T5.year and
+    T1.month = T5.month
+  )
   where
   T1.dataset = 'train' and
   T1.date = T3.date and
@@ -164,7 +184,24 @@ for(i in 1:nrow(df.u)) {
   train.df$month <- factor(train.df$month)
   train.df$day <- factor(train.df$day)
   
-  gbm.model <- gbm(
+  if(store_nbr == 31 & item_nbr == 67) {
+    
+    gbm.model <- gbm(
+      I(log1p(units)) ~ . - date - day - year - month,
+      data = train.df,
+      distribution = "gaussian",
+      n.trees = 10000,
+      interaction.depth = 5,
+      n.minobsinnode = 5,
+      shrinkage = 0.001,
+      bag.fraction = 0.9,
+      train.fraction = 0.95,
+      verbose = TRUE
+    )
+    
+  } else {
+    
+    gbm.model <- gbm(
       I(log1p(units)) ~ . - date - day,
       data = train.df,
       distribution = "gaussian",
@@ -176,6 +213,8 @@ for(i in 1:nrow(df.u)) {
       train.fraction = 0.95,
       verbose = TRUE
     )
+    
+  }
   
   prediction <- predict(gbm.model, newdata=train.df)
   
@@ -229,8 +268,10 @@ for(i in 1:nrow(df.u)) {
 
 write.csv(result, file="gbm_try_scoring.csv")
 result <- read.csv("gbm_try_scoring.csv", stringsAsFactors= FALSE)
+result$store_nbr <- factor(result$store_nbr)
+result$item_nbr <- factor(result$item_nbr)
 
-m <- melt(result, id.vars=c("store_nbr", "item_nbr", "n.tree"))
+m <- melt(result, id.vars=c("X", "store_nbr", "item_nbr", "n.tree"))
 
 ggplot(m) + 
   geom_point(aes(x=n.tree, y=value, colour=item_nbr)) + 
@@ -239,6 +280,12 @@ ggplot(m) +
 
 # store 37
 ggplot(subset(m, store_nbr == 37)) + 
+  geom_point(aes(x=n.tree, y=value, colour=item_nbr)) + 
+  facet_grid(variable ~ store_nbr) +
+  theme_bw()
+
+# store 31
+ggplot(subset(m, store_nbr == 31 & item_nbr == 67)) + 
   geom_point(aes(x=n.tree, y=value, colour=item_nbr)) + 
   facet_grid(variable ~ store_nbr) +
   theme_bw()
@@ -372,18 +419,38 @@ T3.stnpressure_day_plus_seven_diff,
 T3.sealevel_day_plus_seven_diff,
 T3.resultspeed_day_plus_seven_diff,
 T3.resultdir_day_plus_seven_diff,
-T3.avgspeed_day_plus_seven_diff
-               
+T3.avgspeed_day_plus_seven_diff,
+
+T4.total_units_year,
+T4.avg_units_year,
+
+T5.total_units_month,
+T5.avg_units_month,
+
+T4.total_units_year - T5.total_units_month as total_units_year_month_diff,
+T4.avg_units_year - T5.avg_units_month as avg_units_year_month_diff
+
 from 
 sales_all_test T1 inner join
 key T2 on (T1.store_nbr = T2.store_nbr) inner join
-weather_agg T3 on (T2.station_nbr = T3.station_nbr)
+weather_agg T3 on (T2.station_nbr = T3.station_nbr) inner join
+store_item_year_avg T4 on (
+T1.store_nbr = T4.store_nbr and
+T1.item_nbr = T4.item_nbr and
+T1.year = T4.year
+) inner join
+store_item_month_avg T5 on (
+T1.store_nbr = T5.store_nbr and
+T1.item_nbr = T5.item_nbr and
+T1.year = T5.year and
+T1.month = T5.month
+)
 where
 T1.dataset = 'test' and
 T1.date = T3.date and
 T1.store_nbr = ", store_nbr," and
 T1.item_nbr = ", item_nbr, "
-", sep = "")
+               ", sep = "")
   
   subset.test.df <- dbGetQuery(con, sql)
   
