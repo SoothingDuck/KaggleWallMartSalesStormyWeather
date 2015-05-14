@@ -128,6 +128,176 @@ dbWriteTable(con, "weather_agg", df)
 dbGetQuery(con,"create unique index weather_agg_station_nbr_idx on weather_agg (station_nbr, date)")
 
 
+# weather aggregation
+df <- dbGetQuery(con,"
+select 
+T1.station_nbr as station_nbr,
+T1.date as date,
+
+min(T2.date) as min_next_date,
+max(T2.date) as max_next_date,
+
+min(T3.date) as min_previous_date,
+max(T3.date) as max_previous_date,
+
+min(T2.tmax) as tmax_min_next_seven_days,
+max(T2.tmax) as tmax_max_next_seven_days,
+avg(T2.tmax) as tmax_avg_next_seven_days,
+
+min(T2.tmin) as tmin_min_next_seven_days,
+max(T2.tmin) as tmin_max_next_seven_days,
+avg(T2.tmin) as tmin_avg_next_seven_days,
+
+min(T2.tavg) as tavg_min_next_seven_days,
+max(T2.tavg) as tavg_max_next_seven_days,
+avg(T2.tavg) as tavg_avg_next_seven_days,
+
+min(T2.depart) as depart_min_next_seven_days,
+max(T2.depart) as depart_max_next_seven_days,
+avg(T2.depart) as depart_avg_next_seven_days,
+
+min(T2.dewpoint) as dewpoint_min_next_seven_days,
+max(T2.dewpoint) as dewpoint_max_next_seven_days,
+avg(T2.dewpoint) as dewpoint_avg_next_seven_days,
+
+min(T2.wetbulb) as wetbulb_min_next_seven_days,
+max(T2.wetbulb) as wetbulb_max_next_seven_days,
+avg(T2.wetbulb) as wetbulb_avg_next_seven_days,
+
+min(T2.heat) as heat_min_next_seven_days,
+max(T2.heat) as heat_max_next_seven_days,
+avg(T2.heat) as heat_avg_next_seven_days,
+
+min(T2.cool) as cool_min_next_seven_days,
+max(T2.cool) as cool_max_next_seven_days,
+avg(T2.cool) as cool_avg_next_seven_days,
+
+min(T2.sunrise) as sunrise_min_next_seven_days,
+max(T2.sunrise) as sunrise_max_next_seven_days,
+avg(T2.sunrise) as sunrise_avg_next_seven_days,
+
+min(T2.sunset) as sunset_min_next_seven_days,
+max(T2.sunset) as sunset_max_next_seven_days,
+avg(T2.sunset) as sunset_avg_next_seven_days,
+
+min(T2.snowfall) as snowfall_min_next_seven_days,
+max(T2.snowfall) as snowfall_max_next_seven_days,
+avg(T2.snowfall) as snowfall_avg_next_seven_days,
+
+min(T2.preciptotal) as preciptotal_min_next_seven_days,
+max(T2.preciptotal) as preciptotal_max_next_seven_days,
+avg(T2.preciptotal) as preciptotal_avg_next_seven_days,
+
+min(T2.stnpressure) as stnpressure_min_next_seven_days,
+max(T2.stnpressure) as stnpressure_max_next_seven_days,
+avg(T2.stnpressure) as stnpressure_avg_next_seven_days,
+
+min(T2.sealevel) as sealevel_min_next_seven_days,
+max(T2.sealevel) as sealevel_max_next_seven_days,
+avg(T2.sealevel) as sealevel_avg_next_seven_days,
+
+min(T2.resultspeed) as resultspeed_min_next_seven_days,
+max(T2.resultspeed) as resultspeed_max_next_seven_days,
+avg(T2.resultspeed) as resultspeed_avg_next_seven_days,
+
+min(T2.resultdir) as resultdir_min_next_seven_days,
+max(T2.resultdir) as resultdir_max_next_seven_days,
+avg(T2.resultdir) as resultdir_avg_next_seven_days,
+
+min(T2.avgspeed) as avgspeed_min_next_seven_days,
+max(T2.avgspeed) as avgspeed_max_next_seven_days,
+avg(T2.avgspeed) as avgspeed_avg_next_seven_days,
+
+min(T3.tmax) as tmax_min_previous_seven_days,
+max(T3.tmax) as tmax_max_previous_seven_days,
+avg(T3.tmax) as tmax_avg_previous_seven_days,
+
+min(T3.tmin) as tmin_min_previous_seven_days,
+max(T3.tmin) as tmin_max_previous_seven_days,
+avg(T3.tmin) as tmin_avg_previous_seven_days,
+
+min(T3.tavg) as tavg_min_previous_seven_days,
+max(T3.tavg) as tavg_max_previous_seven_days,
+avg(T3.tavg) as tavg_avg_previous_seven_days,
+
+min(T3.depart) as depart_min_previous_seven_days,
+max(T3.depart) as depart_max_previous_seven_days,
+avg(T3.depart) as depart_avg_previous_seven_days,
+
+min(T3.dewpoint) as dewpoint_min_previous_seven_days,
+max(T3.dewpoint) as dewpoint_max_previous_seven_days,
+avg(T3.dewpoint) as dewpoint_avg_previous_seven_days,
+
+min(T3.wetbulb) as wetbulb_min_previous_seven_days,
+max(T3.wetbulb) as wetbulb_max_previous_seven_days,
+avg(T3.wetbulb) as wetbulb_avg_previous_seven_days,
+
+min(T3.heat) as heat_min_previous_seven_days,
+max(T3.heat) as heat_max_previous_seven_days,
+avg(T3.heat) as heat_avg_previous_seven_days,
+
+min(T3.cool) as cool_min_previous_seven_days,
+max(T3.cool) as cool_max_previous_seven_days,
+avg(T3.cool) as cool_avg_previous_seven_days,
+
+min(T3.sunrise) as sunrise_min_previous_seven_days,
+max(T3.sunrise) as sunrise_max_previous_seven_days,
+avg(T3.sunrise) as sunrise_avg_previous_seven_days,
+
+min(T3.sunset) as sunset_min_previous_seven_days,
+max(T3.sunset) as sunset_max_previous_seven_days,
+avg(T3.sunset) as sunset_avg_previous_seven_days,
+
+min(T3.snowfall) as snowfall_min_previous_seven_days,
+max(T3.snowfall) as snowfall_max_previous_seven_days,
+avg(T3.snowfall) as snowfall_avg_previous_seven_days,
+
+min(T3.preciptotal) as preciptotal_min_previous_seven_days,
+max(T3.preciptotal) as preciptotal_max_previous_seven_days,
+avg(T3.preciptotal) as preciptotal_avg_previous_seven_days,
+
+min(T3.stnpressure) as stnpressure_min_previous_seven_days,
+max(T3.stnpressure) as stnpressure_max_previous_seven_days,
+avg(T3.stnpressure) as stnpressure_avg_previous_seven_days,
+
+min(T3.sealevel) as sealevel_min_previous_seven_days,
+max(T3.sealevel) as sealevel_max_previous_seven_days,
+avg(T3.sealevel) as sealevel_avg_previous_seven_days,
+
+min(T3.resultspeed) as resultspeed_min_previous_seven_days,
+max(T3.resultspeed) as resultspeed_max_previous_seven_days,
+avg(T3.resultspeed) as resultspeed_avg_previous_seven_days,
+
+min(T3.resultdir) as resultdir_min_previous_seven_days,
+max(T3.resultdir) as resultdir_max_previous_seven_days,
+avg(T3.resultdir) as resultdir_avg_previous_seven_days,
+
+min(T3.avgspeed) as avgspeed_min_previous_seven_days,
+max(T3.avgspeed) as avgspeed_max_previous_seven_days,
+avg(T3.avgspeed) as avgspeed_avg_previous_seven_days
+                 
+
+from
+weather T1 left outer join
+weather T2 on (
+T1.station_nbr = T2.station_nbr and
+T1.date between (T2.date - (24*3600*7)) and (T2.date - (24*3600*1))
+) left outer join
+weather T3 on (
+T1.station_nbr = T3.station_nbr and
+T1.date between (T3.date + (24*3600*1)) and (T3.date + (24*3600*7))
+)
+group by 1,2
+
+")
+
+
+# dbRemoveTable(con, "weather_next_seven_days")
+dbWriteTable(con, "weather_next_seven_days", df)
+
+# index weather_next_seven_days
+dbGetQuery(con,"create index weather_next_seven_days_station_nbr_idx on weather_next_seven_days (station_nbr, date)")
+
 # Recuperation de toutes les lignes de test
 df <- dbGetQuery(con,"
   select 
