@@ -47,6 +47,74 @@ for(i in 1:nrow(df.u)) {
   T1.day,
   T1.date,
 
+  T3.tmax_min_previous_seven_days,
+  T3.tmax_max_previous_seven_days,
+  T3.tmax_avg_previous_seven_days,
+  
+  T3.tmin_min_previous_seven_days,
+  T3.tmin_max_previous_seven_days,
+  T3.tmin_avg_previous_seven_days,
+  
+  T3.tavg_min_previous_seven_days,
+  T3.tavg_max_previous_seven_days,
+  T3.tavg_avg_previous_seven_days,
+  
+  T3.depart_min_previous_seven_days,
+  T3.depart_max_previous_seven_days,
+  T3.depart_avg_previous_seven_days,
+  
+  T3.dewpoint_min_previous_seven_days,
+  T3.dewpoint_max_previous_seven_days,
+  T3.dewpoint_avg_previous_seven_days,
+  
+  T3.wetbulb_min_previous_seven_days,
+  T3.wetbulb_max_previous_seven_days,
+  T3.wetbulb_avg_previous_seven_days,
+  
+  T3.heat_min_previous_seven_days,
+  T3.heat_max_previous_seven_days,
+  T3.heat_avg_previous_seven_days,
+  
+  T3.cool_min_previous_seven_days,
+  T3.cool_max_previous_seven_days,
+  T3.cool_avg_previous_seven_days,
+  
+  T3.sunrise_min_previous_seven_days,
+  T3.sunrise_max_previous_seven_days,
+  T3.sunrise_avg_previous_seven_days,
+  
+  T3.sunset_min_previous_seven_days,
+  T3.sunset_max_previous_seven_days,
+  T3.sunset_avg_previous_seven_days,
+  
+  T3.snowfall_min_previous_seven_days,
+  T3.snowfall_max_previous_seven_days,
+  T3.snowfall_avg_previous_seven_days,
+  
+  T3.preciptotal_min_previous_seven_days,
+  T3.preciptotal_max_previous_seven_days,
+  T3.preciptotal_avg_previous_seven_days,
+  
+  T3.stnpressure_min_previous_seven_days,
+  T3.stnpressure_max_previous_seven_days,
+  T3.stnpressure_avg_previous_seven_days,
+  
+  T3.sealevel_min_previous_seven_days,
+  T3.sealevel_max_previous_seven_days,
+  T3.sealevel_avg_previous_seven_days,
+  
+  T3.resultspeed_min_previous_seven_days,
+  T3.resultspeed_max_previous_seven_days,
+  T3.resultspeed_avg_previous_seven_days,
+  
+  T3.resultdir_min_previous_seven_days,
+  T3.resultdir_max_previous_seven_days,
+  T3.resultdir_avg_previous_seven_days,
+  
+  T3.avgspeed_min_previous_seven_days,
+  T3.avgspeed_max_previous_seven_days,
+  T3.avgspeed_avg_previous_seven_days,
+               
   T3.tmax_min_next_seven_days,
   T3.tmax_max_next_seven_days,
   T3.tmax_avg_next_seven_days,
@@ -307,6 +375,74 @@ T1.year,
 T1.month,
 T1.day,
 T1.date,
+
+T3.tmax_min_previous_seven_days,
+T3.tmax_max_previous_seven_days,
+T3.tmax_avg_previous_seven_days,
+
+T3.tmin_min_previous_seven_days,
+T3.tmin_max_previous_seven_days,
+T3.tmin_avg_previous_seven_days,
+
+T3.tavg_min_previous_seven_days,
+T3.tavg_max_previous_seven_days,
+T3.tavg_avg_previous_seven_days,
+
+T3.depart_min_previous_seven_days,
+T3.depart_max_previous_seven_days,
+T3.depart_avg_previous_seven_days,
+
+T3.dewpoint_min_previous_seven_days,
+T3.dewpoint_max_previous_seven_days,
+T3.dewpoint_avg_previous_seven_days,
+
+T3.wetbulb_min_previous_seven_days,
+T3.wetbulb_max_previous_seven_days,
+T3.wetbulb_avg_previous_seven_days,
+
+T3.heat_min_previous_seven_days,
+T3.heat_max_previous_seven_days,
+T3.heat_avg_previous_seven_days,
+
+T3.cool_min_previous_seven_days,
+T3.cool_max_previous_seven_days,
+T3.cool_avg_previous_seven_days,
+
+T3.sunrise_min_previous_seven_days,
+T3.sunrise_max_previous_seven_days,
+T3.sunrise_avg_previous_seven_days,
+
+T3.sunset_min_previous_seven_days,
+T3.sunset_max_previous_seven_days,
+T3.sunset_avg_previous_seven_days,
+
+T3.snowfall_min_previous_seven_days,
+T3.snowfall_max_previous_seven_days,
+T3.snowfall_avg_previous_seven_days,
+
+T3.preciptotal_min_previous_seven_days,
+T3.preciptotal_max_previous_seven_days,
+T3.preciptotal_avg_previous_seven_days,
+
+T3.stnpressure_min_previous_seven_days,
+T3.stnpressure_max_previous_seven_days,
+T3.stnpressure_avg_previous_seven_days,
+
+T3.sealevel_min_previous_seven_days,
+T3.sealevel_max_previous_seven_days,
+T3.sealevel_avg_previous_seven_days,
+
+T3.resultspeed_min_previous_seven_days,
+T3.resultspeed_max_previous_seven_days,
+T3.resultspeed_avg_previous_seven_days,
+
+T3.resultdir_min_previous_seven_days,
+T3.resultdir_max_previous_seven_days,
+T3.resultdir_avg_previous_seven_days,
+
+T3.avgspeed_min_previous_seven_days,
+T3.avgspeed_max_previous_seven_days,
+T3.avgspeed_avg_previous_seven_days,
 
 T3.tmax_min_next_seven_days,
 T3.tmax_max_next_seven_days,
