@@ -13,6 +13,18 @@ df$week_day <- wday(df$date)
 df$store_nbr <- factor(df$store_nbr)
 df$item_nbr  <- factor(df$item_nbr)
 
+# Store 1
+tmp <- df[df$store_nbr == 1,]
+tmp <- subset(tmp, units > 0)
+tmp$item_nbr <- factor(tmp$item_nbr)
+
+ggplot(tmp) + 
+  geom_line(aes(x=date, y=units, colour = item_nbr)) +
+  facet_wrap(~ item_nbr) +
+  theme_bw() +
+  ggtitle("Items sold for Store 1")
+
+# agg
 agg <- ddply(
   df,
   .(store_nbr, item_nbr),
@@ -55,6 +67,16 @@ tmp <- df[df$store_nbr == 31 & df$units > 0 & df$item_nbr == 67,]
 tmp$item_nbr <- factor(tmp$item_nbr)
 
 ggplot(tmp) + geom_point(aes(x=date, y=units)) + facet_grid(year ~ week_day)
+
+# All stores
+tmp <- subset(df, units > 0)
+ggplot(tmp) + 
+  geom_line(aes(x=date, y=units, colour = item_nbr)) +
+  facet_wrap(~ store_nbr) + 
+  theme_bw() +
+  ggtitle("Item sold for all stores") +
+  theme(legend.position="none")
+
 
 ##########################################
 ########### key.csv
