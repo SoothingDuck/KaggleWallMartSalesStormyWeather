@@ -40,8 +40,8 @@ weather.df$sunset <- ifelse(weather.df$sunset == "-", NA, weather.df$sunset)
 # w <- merge(weather.df, d)
 # w <- w[, -which(names(w) == "codesum")]
 
-weather.df$snowfall <- ifelse(weather.df$snowfall == "T", 0.0, weather.df$snowfall)
-weather.df$preciptotal <- ifelse(weather.df$preciptotal == "T", 0.0, weather.df$preciptotal)
+weather.df$snowfall <- ifelse(weather.df$snowfall == "T", 0.01, weather.df$snowfall)
+weather.df$preciptotal <- ifelse(weather.df$preciptotal == "T", 0.01, weather.df$preciptotal)
 weather.df$year <- year(weather.df$date)
 weather.df$month <- month(weather.df$date)
 weather.df$week <- week(weather.df$date)
