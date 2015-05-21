@@ -50,6 +50,12 @@ ggplot(subset(df, item_nbr == 93 & units > 0)) +
   facet_grid(week_day ~ store_nbr) + ylim(0,50)
 
 
+# Store 31 item 67
+tmp <- df[df$store_nbr == 31 & df$units > 0 & df$item_nbr == 67,]
+tmp$item_nbr <- factor(tmp$item_nbr)
+
+ggplot(tmp) + geom_point(aes(x=date, y=units)) + facet_grid(year ~ week_day)
+
 ##########################################
 ########### key.csv
 ##########################################

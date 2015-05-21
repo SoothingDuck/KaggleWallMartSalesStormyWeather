@@ -24,6 +24,7 @@ DATA/*.pdf
 submission/*.csv
 
 DATA/*.RData
+DATA/*.png
 
 
 *.csv

@@ -234,7 +234,14 @@ for(i in 1:nrow(df.u)) {
     if(store_nbr == 31 & item_nbr == 67) {
       
       gbm.model <- gbm(
-        I(log1p(units)) ~ . - date - day - year - month,
+        I(log1p(units)) ~ . - 
+          date - 
+          day - 
+          year - 
+          month - 
+          total_units_month -
+          avg_units_month -
+          avg_units_year_month_diff,
         data = train.df,
         distribution = "gaussian",
         n.trees = 10000,
@@ -509,18 +516,18 @@ ggplot(m) +
   facet_grid(variable ~ store_nbr) +
   theme_bw()
 
-# store 37
-ggplot(subset(m, store_nbr == 37)) + 
-  geom_point(aes(x=n.tree, y=value, colour=item_nbr)) + 
-  facet_grid(variable ~ store_nbr) +
-  theme_bw()
-
-# store 31
-ggplot(subset(m, store_nbr == 31)) + 
-  geom_point(aes(x=n.tree, y=value, colour=item_nbr)) + 
-  facet_grid(variable ~ store_nbr) +
-  theme_bw()
-
+for(store_nbr in levels(m$store_nbr)) {
+  tmp <- m[m$store_nbr == store_nbr,]
+  tmp$item_nbr <- factor(as.character(tmp$item_nbr))
+  
+  g <- ggplot(tmp) + 
+    geom_point(aes(x=n.tree, y=value)) + 
+    facet_grid(item_nbr ~ variable) +
+    theme_bw() +
+    ggtitle(paste("Store", store_nbr, sep = " "))
+  
+  ggsave(filename = file.path("DATA", paste("gbm_error_store_", store_nbr, ".png", sep = "")), plot=g, scale = 2)
+}
 
 dbDisconnect(con)
 stop()
@@ -543,7 +550,7 @@ con <- dbConnect(RSQLite::SQLite(), "db.sqlite3")
 
 # Evaluation test
 result <- data.frame()
-df.u <- unique(test.df[, c("store_nbr", "item_nbr")])
+df.u <- unique(df[, c("store_nbr", "item_nbr")])
 
 for(i in 1:nrow(df.u)) {
   store_nbr <- df.u[i, "store_nbr"]
