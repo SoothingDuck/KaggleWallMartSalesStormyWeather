@@ -94,7 +94,7 @@ ggplot(tmp) +
   theme(legend.position="none")
 
 
-ggplot(tmp) + 
+ggplot(subset(tmp, item_nbr == 5)) + 
   geom_boxplot(aes(x=store_nbr, y=units)) +
   facet_wrap(~ item_nbr, scales="free_x") + 
   theme_bw() +
@@ -106,6 +106,15 @@ ggplot(tmp) +
 ########### key.csv
 ##########################################
 key <- read.csv("DATA/key.csv", stringsAsFactors = FALSE)
+
+key$store_nbr <- factor(key$store_nbr)
+key$station_nbr <- factor(key$station_nbr)
+
+ggplot(key) +
+  geom_point(aes(x=store_nbr, y=station_nbr)) +
+  theme_bw()
+  
+
 
 ggplot(key) + 
   geom_bar(aes(x=factor(station_nbr))) +
@@ -121,6 +130,8 @@ ggplot(key) +
   ggtitle("Number of weather station covering each store") +
   xlab("Store") +
   ylab("Number of weather station")
+
+
 
 ##########################################
 ########### weather.csv

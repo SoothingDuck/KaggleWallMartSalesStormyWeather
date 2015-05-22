@@ -37,375 +37,238 @@ for(i in 1:nrow(df.u)) {
   gbm.filename <- file.path("DATA", paste("gbm_store_nbr_", store_nbr, "_item_nbr_", item_nbr, ".RData", sep = ""))
   
   if(! file.exists(gbm.filename)) {
-
-  sql <- paste("
+    sql <- paste("
   
   select
-  T1.units,
-
-  T1.week_day,
-  T1.year,
-  T1.month,
-  T1.day,
-  T1.date,
-
-  T6.tmax - T3.tmax_min_previous_seven_days as tmax_diff_min_previous_seven_days,
-  T6.tmax - T3.tmax_max_previous_seven_days as tmax_diff_max_previous_seven_days,
-  T6.tmax - T3.tmax_avg_previous_seven_days as tmax_diff_avg_previous_seven_days,
-
-  T3.tmax_min_previous_seven_days,
-  T3.tmax_max_previous_seven_days,
-  T3.tmax_avg_previous_seven_days,
-  
-  T6.tmin - T3.tmin_min_previous_seven_days as tmin_diff_min_previous_seven_days,
-  T6.tmin - T3.tmin_max_previous_seven_days as tmin_diff_max_previous_seven_days,
-  T6.tmin - T3.tmin_avg_previous_seven_days as tmin_diff_avg_previous_seven_days,
-
-  T3.tmin_min_previous_seven_days,
-  T3.tmin_max_previous_seven_days,
-  T3.tmin_avg_previous_seven_days,
-  
-  T6.tavg - T3.tavg_min_previous_seven_days as tavg_diff_min_previous_seven_days,
-  T6.tavg - T3.tavg_max_previous_seven_days as tavg_diff_max_previous_seven_days,
-  T6.tavg - T3.tavg_avg_previous_seven_days as tavg_diff_avg_previous_seven_days,
-
-  T3.tavg_min_previous_seven_days,
-  T3.tavg_max_previous_seven_days,
-  T3.tavg_avg_previous_seven_days,
-  
-  T6.depart - T3.depart_min_previous_seven_days as depart_diff_min_previous_seven_days,
-  T6.depart - T3.depart_max_previous_seven_days as depart_diff_max_previous_seven_days,
-  T6.depart - T3.depart_avg_previous_seven_days as depart_diff_avg_previous_seven_days,
-
-  T3.depart_min_previous_seven_days,
-  T3.depart_max_previous_seven_days,
-  T3.depart_avg_previous_seven_days,
-
-  T6.dewpoint - T3.dewpoint_min_previous_seven_days as dewpoint_diff_min_previous_seven_days,
-  T6.dewpoint - T3.dewpoint_max_previous_seven_days as dewpoint_diff_max_previous_seven_days,
-  T6.dewpoint - T3.dewpoint_avg_previous_seven_days as dewpoint_diff_avg_previous_seven_days,
-  
-  T3.dewpoint_min_previous_seven_days,
-  T3.dewpoint_max_previous_seven_days,
-  T3.dewpoint_avg_previous_seven_days,
-  
-  T6.wetbulb - T3.wetbulb_min_previous_seven_days as wetbulb_diff_min_previous_seven_days,
-  T6.wetbulb - T3.wetbulb_max_previous_seven_days as wetbulb_diff_max_previous_seven_days,
-  T6.wetbulb - T3.wetbulb_avg_previous_seven_days as wetbulb_diff_avg_previous_seven_days,
-  
-  T3.wetbulb_min_previous_seven_days,
-  T3.wetbulb_max_previous_seven_days,
-  T3.wetbulb_avg_previous_seven_days,
-
-  T6.heat - T3.heat_min_previous_seven_days as heat_diff_min_previous_seven_days,
-  T6.heat - T3.heat_max_previous_seven_days as heat_diff_max_previous_seven_days,
-  T6.heat - T3.heat_avg_previous_seven_days as heat_diff_avg_previous_seven_days,
-  
-  T3.heat_min_previous_seven_days,
-  T3.heat_max_previous_seven_days,
-  T3.heat_avg_previous_seven_days,
-  
-  T6.cool - T3.cool_min_previous_seven_days as cool_diff_min_previous_seven_days,
-  T6.cool - T3.cool_max_previous_seven_days as cool_diff_max_previous_seven_days,
-  T6.cool - T3.cool_avg_previous_seven_days as cool_diff_avg_previous_seven_days,
-
-  T3.cool_min_previous_seven_days,
-  T3.cool_max_previous_seven_days,
-  T3.cool_avg_previous_seven_days,
-  
-  T6.sunrise - T3.sunrise_min_previous_seven_days as sunrise_diff_min_previous_seven_days,
-  T6.sunrise - T3.sunrise_max_previous_seven_days as sunrise_diff_max_previous_seven_days,
-  T6.sunrise - T3.sunrise_avg_previous_seven_days as sunrise_diff_avg_previous_seven_days,
-
-  T3.sunrise_min_previous_seven_days,
-  T3.sunrise_max_previous_seven_days,
-  T3.sunrise_avg_previous_seven_days,
-  
-  T6.sunset - T3.sunset_min_previous_seven_days as sunset_diff_min_previous_seven_days,
-  T6.sunset - T3.sunset_max_previous_seven_days as sunset_diff_max_previous_seven_days,
-  T6.sunset - T3.sunset_avg_previous_seven_days as sunset_diff_avg_previous_seven_days,
-
-  T3.sunset_min_previous_seven_days,
-  T3.sunset_max_previous_seven_days,
-  T3.sunset_avg_previous_seven_days,
-  
-  T6.snowfall - T3.snowfall_min_previous_seven_days as snowfall_diff_min_previous_seven_days,
-  T6.snowfall - T3.snowfall_max_previous_seven_days as snowfall_diff_max_previous_seven_days,
-  T6.snowfall - T3.snowfall_avg_previous_seven_days as snowfall_diff_avg_previous_seven_days,
-
-  T3.snowfall_min_previous_seven_days,
-  T3.snowfall_max_previous_seven_days,
-  T3.snowfall_avg_previous_seven_days,
-  
-  T6.preciptotal - T3.preciptotal_min_previous_seven_days as preciptotal_diff_min_previous_seven_days,
-  T6.preciptotal - T3.preciptotal_max_previous_seven_days as preciptotal_diff_max_previous_seven_days,
-  T6.preciptotal - T3.preciptotal_avg_previous_seven_days as preciptotal_diff_avg_previous_seven_days,
-
-  T3.preciptotal_min_previous_seven_days,
-  T3.preciptotal_max_previous_seven_days,
-  T3.preciptotal_avg_previous_seven_days,
-  
-  T6.stnpressure - T3.stnpressure_min_previous_seven_days as stnpressure_diff_min_previous_seven_days,
-  T6.stnpressure - T3.stnpressure_max_previous_seven_days as stnpressure_diff_max_previous_seven_days,
-  T6.stnpressure - T3.stnpressure_avg_previous_seven_days as stnpressure_diff_avg_previous_seven_days,
-
-  T3.stnpressure_min_previous_seven_days,
-  T3.stnpressure_max_previous_seven_days,
-  T3.stnpressure_avg_previous_seven_days,
-  
-  T6.sealevel - T3.sealevel_min_previous_seven_days as sealevel_diff_min_previous_seven_days,
-  T6.sealevel - T3.sealevel_max_previous_seven_days as sealevel_diff_max_previous_seven_days,
-  T6.sealevel - T3.sealevel_avg_previous_seven_days as sealevel_diff_avg_previous_seven_days,
-
-  T3.sealevel_min_previous_seven_days,
-  T3.sealevel_max_previous_seven_days,
-  T3.sealevel_avg_previous_seven_days,
-  
-  T6.resultspeed - T3.resultspeed_min_previous_seven_days as resultspeed_diff_min_previous_seven_days,
-  T6.resultspeed - T3.resultspeed_max_previous_seven_days as resultspeed_diff_max_previous_seven_days,
-  T6.resultspeed - T3.resultspeed_avg_previous_seven_days as resultspeed_diff_avg_previous_seven_days,
-
-  T3.resultspeed_min_previous_seven_days,
-  T3.resultspeed_max_previous_seven_days,
-  T3.resultspeed_avg_previous_seven_days,
-  
-  T6.resultdir - T3.resultdir_min_previous_seven_days as resultdir_diff_min_previous_seven_days,
-  T6.resultdir - T3.resultdir_max_previous_seven_days as resultdir_diff_max_previous_seven_days,
-  T6.resultdir - T3.resultdir_avg_previous_seven_days as resultdir_diff_avg_previous_seven_days,
-
-  T3.resultdir_min_previous_seven_days,
-  T3.resultdir_max_previous_seven_days,
-  T3.resultdir_avg_previous_seven_days,
-  
-  T6.avgspeed - T3.avgspeed_min_previous_seven_days as avgspeed_diff_min_previous_seven_days,
-  T6.avgspeed - T3.avgspeed_max_previous_seven_days as avgspeed_diff_max_previous_seven_days,
-  T6.avgspeed - T3.avgspeed_avg_previous_seven_days as avgspeed_diff_avg_previous_seven_days,
-
-  T3.avgspeed_min_previous_seven_days,
-  T3.avgspeed_max_previous_seven_days,
-  T3.avgspeed_avg_previous_seven_days,
-               
-  T6.tmax - T3.tmax_min_next_seven_days as tmax_diff_min_next_seven_days,
-  T6.tmax - T3.tmax_max_next_seven_days as tmax_diff_max_next_seven_days,
-  T6.tmax - T3.tmax_avg_next_seven_days as tmax_diff_avg_next_seven_days,
-
-  T3.tmax_min_next_seven_days,
-  T3.tmax_max_next_seven_days,
-  T3.tmax_avg_next_seven_days,
-               
-  T6.tmin - T3.tmin_min_next_seven_days as tmin_diff_min_next_seven_days,
-  T6.tmin - T3.tmin_max_next_seven_days as tmin_diff_max_next_seven_days,
-  T6.tmin - T3.tmin_avg_next_seven_days as tmin_diff_avg_next_seven_days,
-
-  T3.tmin_min_next_seven_days,
-  T3.tmin_max_next_seven_days,
-  T3.tmin_avg_next_seven_days,
-
-  T6.tavg - T3.tavg_min_next_seven_days as tavg_diff_min_next_seven_days,
-  T6.tavg - T3.tavg_max_next_seven_days as tavg_diff_max_next_seven_days,
-  T6.tavg - T3.tavg_avg_next_seven_days as tavg_diff_avg_next_seven_days,
-
-  T3.tavg_min_next_seven_days,
-  T3.tavg_max_next_seven_days,
-  T3.tavg_avg_next_seven_days,
-
-  T6.depart - T3.depart_min_next_seven_days as depart_diff_min_next_seven_days,
-  T6.depart - T3.depart_max_next_seven_days as depart_diff_max_next_seven_days,
-  T6.depart - T3.depart_avg_next_seven_days as depart_diff_avg_next_seven_days,
-
-  T3.depart_min_next_seven_days,
-  T3.depart_max_next_seven_days,
-  T3.depart_avg_next_seven_days,
-
-  T6.dewpoint - T3.dewpoint_min_next_seven_days as dewpoint_diff_min_next_seven_days,
-  T6.dewpoint - T3.dewpoint_max_next_seven_days as dewpoint_diff_max_next_seven_days,
-  T6.dewpoint - T3.dewpoint_avg_next_seven_days as dewpoint_diff_avg_next_seven_days,
-
-  T3.dewpoint_min_next_seven_days,
-  T3.dewpoint_max_next_seven_days,
-  T3.dewpoint_avg_next_seven_days,
-
-  T6.wetbulb - T3.wetbulb_min_next_seven_days as wetbulb_diff_min_next_seven_days,
-  T6.wetbulb - T3.wetbulb_max_next_seven_days as wetbulb_diff_max_next_seven_days,
-  T6.wetbulb - T3.wetbulb_avg_next_seven_days as wetbulb_diff_avg_next_seven_days,
-
-  T3.wetbulb_min_next_seven_days,
-  T3.wetbulb_max_next_seven_days,
-  T3.wetbulb_avg_next_seven_days,
-
-  T6.heat - T3.heat_min_next_seven_days as heat_diff_min_next_seven_days,
-  T6.heat - T3.heat_max_next_seven_days as heat_diff_max_next_seven_days,
-  T6.heat - T3.heat_avg_next_seven_days as heat_diff_avg_next_seven_days,
-
-  T3.heat_min_next_seven_days,
-  T3.heat_max_next_seven_days,
-  T3.heat_avg_next_seven_days,
-
-  T6.cool - T3.cool_min_next_seven_days as cool_diff_min_next_seven_days,
-  T6.cool - T3.cool_max_next_seven_days as cool_diff_max_next_seven_days,
-  T6.cool - T3.cool_avg_next_seven_days as cool_diff_avg_next_seven_days,
-
-  T3.cool_min_next_seven_days,
-  T3.cool_max_next_seven_days,
-  T3.cool_avg_next_seven_days,
-
-  T6.sunrise - T3.sunrise_min_next_seven_days as sunrise_diff_min_next_seven_days,
-  T6.sunrise - T3.sunrise_max_next_seven_days as sunrise_diff_max_next_seven_days,
-  T6.sunrise - T3.sunrise_avg_next_seven_days as sunrise_diff_avg_next_seven_days,
-
-  T3.sunrise_min_next_seven_days,
-  T3.sunrise_max_next_seven_days,
-  T3.sunrise_avg_next_seven_days,
-
-  T6.sunset - T3.sunset_min_next_seven_days as sunset_diff_min_next_seven_days,
-  T6.sunset - T3.sunset_max_next_seven_days as sunset_diff_max_next_seven_days,
-  T6.sunset - T3.sunset_avg_next_seven_days as sunset_diff_avg_next_seven_days,
-
-  T3.sunset_min_next_seven_days,
-  T3.sunset_max_next_seven_days,
-  T3.sunset_avg_next_seven_days,
-
-  T6.snowfall - T3.snowfall_min_next_seven_days as snowfall_diff_min_next_seven_days,
-  T6.snowfall - T3.snowfall_max_next_seven_days as snowfall_diff_max_next_seven_days,
-  T6.snowfall - T3.snowfall_avg_next_seven_days as snowfall_diff_avg_next_seven_days,
-
-  T3.snowfall_min_next_seven_days,
-  T3.snowfall_max_next_seven_days,
-  T3.snowfall_avg_next_seven_days,
-
-  T6.preciptotal - T3.preciptotal_min_next_seven_days as preciptotal_diff_min_next_seven_days,
-  T6.preciptotal - T3.preciptotal_max_next_seven_days as preciptotal_diff_max_next_seven_days,
-  T6.preciptotal - T3.preciptotal_avg_next_seven_days as preciptotal_diff_avg_next_seven_days,
-
-  T3.preciptotal_min_next_seven_days,
-  T3.preciptotal_max_next_seven_days,
-  T3.preciptotal_avg_next_seven_days,
-
-  T6.stnpressure - T3.stnpressure_min_next_seven_days as stnpressure_diff_min_next_seven_days,
-  T6.stnpressure - T3.stnpressure_max_next_seven_days as stnpressure_diff_max_next_seven_days,
-  T6.stnpressure - T3.stnpressure_avg_next_seven_days as stnpressure_diff_avg_next_seven_days,
-
-  T3.stnpressure_min_next_seven_days,
-  T3.stnpressure_max_next_seven_days,
-  T3.stnpressure_avg_next_seven_days,
-
-  T6.sealevel - T3.sealevel_min_next_seven_days as sealevel_diff_min_next_seven_days,
-  T6.sealevel - T3.sealevel_max_next_seven_days as sealevel_diff_max_next_seven_days,
-  T6.sealevel - T3.sealevel_avg_next_seven_days as sealevel_diff_avg_next_seven_days,
-
-  T3.sealevel_min_next_seven_days,
-  T3.sealevel_max_next_seven_days,
-  T3.sealevel_avg_next_seven_days,
-
-  T6.resultspeed - T3.resultspeed_min_next_seven_days as resultspeed_diff_min_next_seven_days,
-  T6.resultspeed - T3.resultspeed_max_next_seven_days as resultspeed_diff_max_next_seven_days,
-  T6.resultspeed - T3.resultspeed_avg_next_seven_days as resultspeed_diff_avg_next_seven_days,
-
-  T3.resultspeed_min_next_seven_days,
-  T3.resultspeed_max_next_seven_days,
-  T3.resultspeed_avg_next_seven_days,
-
-  T6.resultdir - T3.resultdir_min_next_seven_days as resultdir_diff_min_next_seven_days,
-  T6.resultdir - T3.resultdir_max_next_seven_days as resultdir_diff_max_next_seven_days,
-  T6.resultdir - T3.resultdir_avg_next_seven_days as resultdir_diff_avg_next_seven_days,
-
-  T3.resultdir_min_next_seven_days,
-  T3.resultdir_max_next_seven_days,
-  T3.resultdir_avg_next_seven_days,
-
-  T6.avgspeed - T3.avgspeed_min_next_seven_days as avgspeed_diff_min_next_seven_days,
-  T6.avgspeed - T3.avgspeed_max_next_seven_days as avgspeed_diff_max_next_seven_days,
-  T6.avgspeed - T3.avgspeed_avg_next_seven_days as avgspeed_diff_avg_next_seven_days,
-
-  T3.avgspeed_min_next_seven_days,
-  T3.avgspeed_max_next_seven_days,
-  T3.avgspeed_avg_next_seven_days,
-
-  T4.avg_units_year,
-
-  T5.avg_units_month,
-
-  T4.avg_units_year - T5.avg_units_month as avg_units_year_month_diff
-
-  from 
-  sales T1 inner join
-  key T2 on (T1.store_nbr = T2.store_nbr) inner join
-  weather_next_seven_days T3 on (T2.station_nbr = T3.station_nbr) inner join
-  store_item_year_avg T4 on (
-    T1.store_nbr = T4.store_nbr and
-    T1.item_nbr = T4.item_nbr and
-    T1.year = T4.year
-  ) inner join
-  store_item_month_avg T5 on (
-    T1.store_nbr = T5.store_nbr and
-    T1.item_nbr = T5.item_nbr and
-    T1.year = T5.year and
-    T1.month = T5.month
-  ) inner join 
-  weather T6 on (
-    T2.station_nbr = T6.station_nbr and
-    T1.date = T6.date
-  )
-  where
-  T1.dataset = 'train' and
-  T1.date = T3.date and
-  T1.store_nbr = ", store_nbr," and
-  T1.item_nbr = ", item_nbr, " and
-  T1.units < 1000 and
-  T1.year in (2013, 2014)
-  ", sep = "")
-  
-  train.df <- dbGetQuery(con, sql)
-
-  for(col in names(train.df)) {
-    train.df[, col] <- as.numeric(train.df[, col])
-  }
-  
-  indice.cols.to.keep <- as.integer(which(! apply(train.df, 2, function(x) { all(is.na(x)) })))
-  
-  train.df <- train.df[, indice.cols.to.keep]
-  train.df$week_day <- factor(train.df$week_day)
-  train.df$year <- factor(train.df$year)
-  train.df$month <- factor(train.df$month)
-  train.df$day <- factor(train.df$day)
-  
-  if(store_nbr == 31 & item_nbr == 67) {
+                 T1.units,
+                 
+                 T1.week_day,
+                 T1.year,
+                 T1.month,
+                 T1.day,
+                 T1.date,
+                 
+                 T3.tmax_min_previous_seven_days,
+                 T3.tmax_max_previous_seven_days,
+                 T3.tmax_avg_previous_seven_days,
+                 
+                 T3.tmin_min_previous_seven_days,
+                 T3.tmin_max_previous_seven_days,
+                 T3.tmin_avg_previous_seven_days,
+                 
+                 T3.tavg_min_previous_seven_days,
+                 T3.tavg_max_previous_seven_days,
+                 T3.tavg_avg_previous_seven_days,
+                 
+                 T3.depart_min_previous_seven_days,
+                 T3.depart_max_previous_seven_days,
+                 T3.depart_avg_previous_seven_days,
+                 
+                 T3.dewpoint_min_previous_seven_days,
+                 T3.dewpoint_max_previous_seven_days,
+                 T3.dewpoint_avg_previous_seven_days,
+                 
+                 T3.wetbulb_min_previous_seven_days,
+                 T3.wetbulb_max_previous_seven_days,
+                 T3.wetbulb_avg_previous_seven_days,
+                 
+                 T3.heat_min_previous_seven_days,
+                 T3.heat_max_previous_seven_days,
+                 T3.heat_avg_previous_seven_days,
+                 
+                 T3.cool_min_previous_seven_days,
+                 T3.cool_max_previous_seven_days,
+                 T3.cool_avg_previous_seven_days,
+                 
+                 T3.sunrise_min_previous_seven_days,
+                 T3.sunrise_max_previous_seven_days,
+                 T3.sunrise_avg_previous_seven_days,
+                 
+                 T3.sunset_min_previous_seven_days,
+                 T3.sunset_max_previous_seven_days,
+                 T3.sunset_avg_previous_seven_days,
+                 
+                 T3.snowfall_min_previous_seven_days,
+                 T3.snowfall_max_previous_seven_days,
+                 T3.snowfall_avg_previous_seven_days,
+                 
+                 T3.preciptotal_min_previous_seven_days,
+                 T3.preciptotal_max_previous_seven_days,
+                 T3.preciptotal_avg_previous_seven_days,
+                 
+                 T3.stnpressure_min_previous_seven_days,
+                 T3.stnpressure_max_previous_seven_days,
+                 T3.stnpressure_avg_previous_seven_days,
+                 
+                 T3.sealevel_min_previous_seven_days,
+                 T3.sealevel_max_previous_seven_days,
+                 T3.sealevel_avg_previous_seven_days,
+                 
+                 T3.resultspeed_min_previous_seven_days,
+                 T3.resultspeed_max_previous_seven_days,
+                 T3.resultspeed_avg_previous_seven_days,
+                 
+                 T3.resultdir_min_previous_seven_days,
+                 T3.resultdir_max_previous_seven_days,
+                 T3.resultdir_avg_previous_seven_days,
+                 
+                 T3.avgspeed_min_previous_seven_days,
+                 T3.avgspeed_max_previous_seven_days,
+                 T3.avgspeed_avg_previous_seven_days,
+                 
+                 T3.tmax_min_next_seven_days,
+                 T3.tmax_max_next_seven_days,
+                 T3.tmax_avg_next_seven_days,
+                 
+                 T3.tmin_min_next_seven_days,
+                 T3.tmin_max_next_seven_days,
+                 T3.tmin_avg_next_seven_days,
+                 
+                 T3.tavg_min_next_seven_days,
+                 T3.tavg_max_next_seven_days,
+                 T3.tavg_avg_next_seven_days,
+                 
+                 T3.depart_min_next_seven_days,
+                 T3.depart_max_next_seven_days,
+                 T3.depart_avg_next_seven_days,
+                 
+                 T3.dewpoint_min_next_seven_days,
+                 T3.dewpoint_max_next_seven_days,
+                 T3.dewpoint_avg_next_seven_days,
+                 
+                 T3.wetbulb_min_next_seven_days,
+                 T3.wetbulb_max_next_seven_days,
+                 T3.wetbulb_avg_next_seven_days,
+                 
+                 T3.heat_min_next_seven_days,
+                 T3.heat_max_next_seven_days,
+                 T3.heat_avg_next_seven_days,
+                 
+                 T3.cool_min_next_seven_days,
+                 T3.cool_max_next_seven_days,
+                 T3.cool_avg_next_seven_days,
+                 
+                 T3.sunrise_min_next_seven_days,
+                 T3.sunrise_max_next_seven_days,
+                 T3.sunrise_avg_next_seven_days,
+                 
+                 T3.sunset_min_next_seven_days,
+                 T3.sunset_max_next_seven_days,
+                 T3.sunset_avg_next_seven_days,
+                 
+                 T3.snowfall_min_next_seven_days,
+                 T3.snowfall_max_next_seven_days,
+                 T3.snowfall_avg_next_seven_days,
+                 
+                 T3.preciptotal_min_next_seven_days,
+                 T3.preciptotal_max_next_seven_days,
+                 T3.preciptotal_avg_next_seven_days,
+                 
+                 T3.stnpressure_min_next_seven_days,
+                 T3.stnpressure_max_next_seven_days,
+                 T3.stnpressure_avg_next_seven_days,
+                 
+                 T3.sealevel_min_next_seven_days,
+                 T3.sealevel_max_next_seven_days,
+                 T3.sealevel_avg_next_seven_days,
+                 
+                 T3.resultspeed_min_next_seven_days,
+                 T3.resultspeed_max_next_seven_days,
+                 T3.resultspeed_avg_next_seven_days,
+                 
+                 T3.resultdir_min_next_seven_days,
+                 T3.resultdir_max_next_seven_days,
+                 T3.resultdir_avg_next_seven_days,
+                 
+                 T3.avgspeed_min_next_seven_days,
+                 T3.avgspeed_max_next_seven_days,
+                 T3.avgspeed_avg_next_seven_days,
+                 
+                 T4.total_units_year,
+                 T4.avg_units_year,
+                 
+                 T5.total_units_month,
+                 T5.avg_units_month,
+                 
+                 T4.total_units_year - T5.total_units_month as total_units_year_month_diff,
+                 T4.avg_units_year - T5.avg_units_month as avg_units_year_month_diff
+                 
+                 from 
+                 sales T1 inner join
+                 key T2 on (T1.store_nbr = T2.store_nbr) inner join
+                 weather_next_seven_days T3 on (T2.station_nbr = T3.station_nbr) inner join
+                 store_item_year_avg T4 on (
+                 T1.store_nbr = T4.store_nbr and
+                 T1.item_nbr = T4.item_nbr and
+                 T1.year = T4.year
+                 ) inner join
+                 store_item_month_avg T5 on (
+                 T1.store_nbr = T5.store_nbr and
+                 T1.item_nbr = T5.item_nbr and
+                 T1.year = T5.year and
+                 T1.month = T5.month
+                 )
+                 where
+                 T1.dataset = 'train' and
+                 T1.date = T3.date and
+                 T1.store_nbr = ", store_nbr," and
+                 T1.item_nbr = ", item_nbr, " and
+                 T1.units < 1000 and
+                 T1.year in (2013, 2014)
+                 ", sep = "")
     
-    gbm.model <- gbm(
-      I(log1p(units)) ~ . - date - day - year - month,
-      data = train.df,
-      distribution = "gaussian",
-      n.trees = 5000,
-      interaction.depth = 5,
-      n.minobsinnode = 5,
-      shrinkage = 0.001,
-      bag.fraction = 0.9,
-      train.fraction = 0.95,
-      verbose = TRUE
-    )
+    train.df <- dbGetQuery(con, sql)
     
-  } else {
+    for(col in names(train.df)) {
+      train.df[, col] <- as.numeric(train.df[, col])
+    }
     
-    gbm.model <- gbm(
-      I(log1p(units)) ~ . - date - day,
-      data = train.df,
-      distribution = "gaussian",
-      n.trees = 10000,
-      interaction.depth = 5,
-      n.minobsinnode = 5,
-      shrinkage = 0.001,
-      bag.fraction = 0.9,
-      train.fraction = 0.95,
-      verbose = TRUE
-    )
+    indice.cols.to.keep <- as.integer(which(! apply(train.df, 2, function(x) { all(is.na(x)) })))
+    
+    train.df <- train.df[, indice.cols.to.keep]
+    train.df$week_day <- factor(train.df$week_day)
+    train.df$year <- factor(train.df$year)
+    train.df$month <- factor(train.df$month)
+    train.df$day <- factor(train.df$day)
+    
+    if(store_nbr == 31 & item_nbr == 67) {
+      
+      gbm.model <- gbm(
+        I(log1p(units)) ~ . - date - day - year - month,
+        data = train.df,
+        distribution = "gaussian",
+        n.trees = 10000,
+        interaction.depth = 5,
+        n.minobsinnode = 5,
+        shrinkage = 0.001,
+        bag.fraction = 0.9,
+        train.fraction = 0.95,
+        verbose = TRUE
+      )
+      
+    } else {
+      
+      gbm.model <- gbm(
+        I(log1p(units)) ~ . - date - day,
+        data = train.df,
+        distribution = "gaussian",
+        n.trees = 10000,
+        interaction.depth = 5,
+        n.minobsinnode = 5,
+        shrinkage = 0.001,
+        bag.fraction = 0.9,
+        train.fraction = 0.95,
+        verbose = TRUE
+      )
+      
+    }
+    
+    prediction <- predict(gbm.model, newdata=train.df)
+    
+    save(gbm.model, file = gbm.filename)
     
   }
   
-  prediction <- predict(gbm.model, newdata=train.df)
-  
-  save(gbm.model, file = gbm.filename)
-
-  }
 }
 
 dbDisconnect(con)
@@ -479,7 +342,6 @@ ggplot(subset(m, store_nbr == 31 & item_nbr == 67)) +
 
 
 dbDisconnect(con)
-stop()
 
 ##########################################################
 ########## Evaluation sur jeu de test
