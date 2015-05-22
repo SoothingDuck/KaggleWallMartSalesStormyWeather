@@ -113,11 +113,11 @@ from
 weather T1 left outer join
 weather T2 on (
 T1.station_nbr = T2.station_nbr and
-T1.date = T2.date - (24*3600*2) and T2.station_nbr not in (5)
+T1.date = T2.date - (24*3600*2)
 ) left outer join
 weather T3 on (
 T1.station_nbr = T3.station_nbr and
-T1.date = T3.date - (24*3600*7) and T2.station_nbr not in (5)
+T1.date = T3.date - (24*3600*7)
 )
 ")
 
@@ -281,13 +281,11 @@ from
 weather T1 left outer join
 weather T2 on (
 T1.station_nbr = T2.station_nbr and
-T1.date between (T2.date - (24*3600*7)) and (T2.date - (24*3600*1)) and
-T2.station_nbr not in (5)
+T1.date between (T2.date - (24*3600*7)) and (T2.date - (24*3600*1))
 ) left outer join
 weather T3 on (
 T1.station_nbr = T3.station_nbr and
-T1.date between (T3.date + (24*3600*1)) and (T3.date + (24*3600*7)) and
-T2.station_nbr not in (5)
+T1.date between (T3.date + (24*3600*1)) and (T3.date + (24*3600*7))
 )
 group by 1,2
 
