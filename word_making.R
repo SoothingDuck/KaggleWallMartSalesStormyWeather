@@ -77,6 +77,30 @@ ggplot(tmp) +
   ggtitle("Item sold for all stores") +
   theme(legend.position="none")
 
+# All stores less then 1000 units
+tmp <- subset(df, units > 0 & units < 1000)
+ggplot(tmp) + 
+  geom_line(aes(x=date, y=units, colour = item_nbr)) +
+  facet_wrap(~ store_nbr) + 
+  theme_bw() +
+  ggtitle("Item sold for all stores") +
+  theme(legend.position="none")
+
+ggplot(tmp) + 
+  geom_boxplot(aes(x=item_nbr, y=units)) +
+  facet_wrap(~ store_nbr, scales="free_x") + 
+  theme_bw() +
+  ggtitle("Item sold for all stores") +
+  theme(legend.position="none")
+
+
+ggplot(tmp) + 
+  geom_boxplot(aes(x=store_nbr, y=units)) +
+  facet_wrap(~ item_nbr, scales="free_x") + 
+  theme_bw() +
+  ggtitle("Item sold for all stores") +
+  theme(legend.position="none")
+
 
 ##########################################
 ########### key.csv
