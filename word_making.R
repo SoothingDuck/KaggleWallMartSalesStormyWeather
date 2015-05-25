@@ -253,3 +253,18 @@ ggplot(df) +
 ggplot(df) + 
   geom_line(aes(x=date, y=stnpressure))  +
   facet_wrap(~ station_nbr) +  theme_bw()
+
+
+ggplot(df) + 
+  geom_line(aes(x=date, y=sealevel))  +
+  facet_wrap(~ station_nbr) +  theme_bw()
+
+
+ggplot(df) + 
+  geom_line(aes(x=date, y=resultspeed))  +
+  facet_wrap(~ station_nbr) +  theme_bw()
+
+
+ggplot(df) + 
+  geom_line(aes(x=date, y=resultdir))  +
+  facet_wrap(~ station_nbr) +  theme_bw()

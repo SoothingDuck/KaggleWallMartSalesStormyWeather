@@ -241,9 +241,11 @@ for(i in 1:nrow(df.u)) {
         interaction.depth = 5,
         n.minobsinnode = 5,
         shrinkage = 0.001,
-        bag.fraction = 0.9,
-        train.fraction = 0.95,
-        verbose = TRUE
+        bag.fraction = 0.5,
+#        train.fraction = 0.95,
+        verbose = TRUE,
+        cv.folds = 3,
+        n.cores = 4
       )
       
     } else {
@@ -256,14 +258,17 @@ for(i in 1:nrow(df.u)) {
         interaction.depth = 5,
         n.minobsinnode = 5,
         shrinkage = 0.001,
-        bag.fraction = 0.9,
-        train.fraction = 0.95,
-        verbose = TRUE
+        bag.fraction = 0.5,
+#        train.fraction = 0.95,
+        verbose = TRUE,
+        cv.folds = 3,
+        n.cores = 4
       )
       
     }
     
-    prediction <- predict(gbm.model, newdata=train.df)
+    n.trees <- which.min(gbm.model$cv.error)
+    prediction <- predict(gbm.model, newdata=train.df, n.trees = n.trees)
     
     save(gbm.model, file = gbm.filename)
     
@@ -563,7 +568,8 @@ T1.item_nbr = ", item_nbr, "
   
   load(gbm.filename)
   
-  prediction.units <- expm1(predict(gbm.model, newdata=subset.test.df))
+  cv.n.trees <- which.min(gbm.model$cv.error)
+  prediction.units <- expm1(predict(gbm.model, newdata=subset.test.df, n.trees = cv.n.trees))
   
   result <- rbind(
     result,
